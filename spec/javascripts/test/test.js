@@ -14,6 +14,47 @@ describe('jsqc', function() {
 					      expect(g.show(1))
 						  .toEqual("1");
 					  });
+				       it('generates different values', function() {
+					      var seen = {};
+					      var count = 100;
+					      var seen_numbers = 0;
+					      var number;
+					      while(count--) {
+						  number = g.generate();
+						  if(seen[number])
+						      continue;
+						  seen[number] = true;
+						  seen_numbers++;
+					      }
+					      expect(seen_numbers)
+						  .toBeGreaterThan(10);
+					      
+					  });
+				       it('generates integers', function() {
+					      var value = g.generate();
+					      expect(value)
+						  .toEqual(Math.floor(value));
+					  });
+				   });
+			  describe('array', function() {
+				       var g = new (jsqc.gen.array(
+							jsqc.gen.integer))();
+				       it('can be shrunk', function() {
+					      expect(g.shrink([1, 2, 3]))
+						  .toEqual(
+						      [[1, 2, 2], [1, 2]]
+						     );
+					  });
+				       it('empty list cannot be shrunk', function() {
+					      expect(g.shrink([]))
+						  .toEqual([]);
+					  });
+				       it('can be copied', function() {
+					      var original = [1,2];
+					      var newList = g.copy(original);
+					      original[0] = "changed";
+					      expect(newList).toEqual([1, 2]);
+					  });
 				   });
 		      });
 
