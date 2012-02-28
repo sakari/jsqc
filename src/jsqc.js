@@ -19,6 +19,37 @@ jsqc = (function() {
 
 	    return {
 		gen : {
+		    oneof : function(gens) {
+			var generators = [];
+			for(var i in gens) {
+			    generators.push(new gens[i]());
+			}
+			return function() {
+			    this.generate = function() {
+				var choice = new (jsqc.gen.choice(generators))();
+				return choice.generate().generate();
+			    };
+			    this.shrink = function() { 
+				return []; 
+			    };
+			};
+		    },
+		    choice : function(values, gen) {
+			return function() {
+			    this.generate = function() {
+				var i = Math.floor(Math.random() * values.length);
+				return values[i];
+			    };
+			    this.copy = function(value) {
+				if(gen)
+				    return new gen().copy(value);
+				return value;
+			    };
+			    this.shrink = function() {
+				return [];
+			    };
+			};
+		    },
 		    const : function(value) {
 			return function() {
 			    this.generate = function() {

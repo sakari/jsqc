@@ -1,5 +1,26 @@
 describe('jsqc', function() {
 	     describe('gen', function(){
+			  describe('oneof', function() {
+				      var g = new (jsqc.gen.oneof(
+						       [jsqc.gen.const(1),
+							jsqc.gen.const("A")]
+						   ))();
+				       it('generates values from the union of generators', function() {
+					      var value = g.generate();
+					      expect(value === 1 ||
+						     value === "A")
+						  .toEqual(true);
+					  });
+				   });
+			  describe('choice', function() {
+				       var g = new (jsqc.gen.choice([1, 2]))();
+				       it('generates one of given values', function() {
+					      var value = g.generate();
+					      expect(value === 1 ||
+						     value === 2)
+						  .toEqual(true);
+					  });
+				   });
 			  describe('const', function() {
 				      var g = new (jsqc.gen.const("constant"))();
 				       it('generates the same value', function() {
