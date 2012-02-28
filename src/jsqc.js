@@ -8,7 +8,7 @@ jsqc = (function() {
 		var candidates = generator.shrink(starting_value);
 		for( var i in candidates ) {
 		    try {
-			prop(candidates[i]);
+			prop(generator.copy(candidates[i]));
 		    } catch (x) {
 			last_failing = candidates[i];
 			candidates = generator.shrink(candidates[i]);
@@ -20,6 +20,9 @@ jsqc = (function() {
 	    return {
 		gen : {
 		    integer : function() {
+			this.copy = function(value) {
+			     return value;
+			},
 			this.generate = function() {return 0;};
 		    }
 		},
@@ -27,7 +30,7 @@ jsqc = (function() {
 		    var generator = new gen();
 		    var value = generator.generate();
 		    try {
-			prop(value);
+			prop(generator.copy(value));
 		    } catch (x) {
 			value = minimize(generator, prop, value);
 			throw new Error('Failing case ' + 

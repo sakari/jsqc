@@ -20,6 +20,9 @@ describe('jsqc', function() {
 			     });
 			  it('calls generator to produce test data', function() {
 				 function gen() {
+				     this.copy = function(value){
+					 return value;
+				     }
 				     this.generate = function() {
 					 return "value";
 				     };
@@ -31,6 +34,9 @@ describe('jsqc', function() {
 			     });
 			  it('calls shrink to shrink failing test data', function() {
 				 function gen() {
+				     this.copy = function(value) {
+					 return value;
+				     };
 				     this.generate = function() {
 					 return 2;
 				     };
