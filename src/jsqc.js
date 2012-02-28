@@ -20,9 +20,19 @@ jsqc = (function() {
 	    return {
 		gen : {
 		    integer : function() {
+			this.shrink = function(value) {
+			    if (value === 0)
+				return [];
+			    if (value < 0)
+				return [value + 1];
+			    return [value - 1];
+			};
+			this.show = function(value) {
+			  return value.toString();  
+			};
 			this.copy = function(value) {
 			     return value;
-			},
+			};
 			this.generate = function() {return 0;};
 		    }
 		},
@@ -34,7 +44,7 @@ jsqc = (function() {
 		    } catch (x) {
 			value = minimize(generator, prop, value);
 			throw new Error('Failing case ' + 
-					value + 
+					generator.show(value) + 
 					' error:' + 
 					x);
 		    }

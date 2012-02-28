@@ -1,4 +1,22 @@
 describe('jsqc', function() {
+	     describe('gen', function(){
+			  describe('integer', function() {
+				       var g = new jsqc.gen.integer();
+				       it('shrinking goes towards 0', function() {
+					      expect(g.shrink(2))
+						  .toEqual([1]);
+					  });
+				       it('0 is not shrunk', function() {
+					      expect(g.shrink(0))
+						  .toEqual([]);
+					  });
+				       it('can be shown', function() {
+					      expect(g.show(1))
+						  .toEqual("1");
+					  });
+				   });
+		      });
+
 	     describe('#property', function() {
 			  it('produces test data', function() {
 				 var values = [];
