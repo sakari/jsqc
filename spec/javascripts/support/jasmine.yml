@@ -1,0 +1,10 @@
+src_files:
+  - src/*.js
+stylesheets:
+helpers:
+spec_files:
+  - **/*.js
+src_dir:
+spec_dir: spec/javascripts/test
+
+
