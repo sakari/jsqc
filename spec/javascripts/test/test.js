@@ -1,5 +1,12 @@
 describe('jsqc', function() {
 	     describe('gen', function(){
+			  describe('const', function() {
+				      var g = new (jsqc.gen.const("constant"))();
+				       it('generates the same value', function() {
+					      expect(g.generate())
+						  .toEqual("constant");
+					  });
+				   });
 			  describe('integer', function() {
 				       var g = new jsqc.gen.integer();
 				       it('shrinking goes towards 0', function() {

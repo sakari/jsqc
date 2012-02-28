@@ -19,6 +19,19 @@ jsqc = (function() {
 
 	    return {
 		gen : {
+		    const : function(value) {
+			return function() {
+			    this.generate = function() {
+				return value;
+			    };
+			    this.copy = function() {
+				return value;
+			    };
+			    this.shrink = function() {
+				return [];
+			    };
+			};
+		    },
 		    array : function(inner) {
 			return function() {
 			    var inner_gen = new inner();
