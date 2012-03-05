@@ -29,16 +29,24 @@ describe('jsqc', function() {
 					  });
 				   });
 			  describe('integer', function() {
-				       var g = new jsqc.gen.integer();
 				       it('shrinking goes towards 0', function() {
-					      expect(g.shrink(2))
+					      var g = new jsqc.gen.integer(1, 
+									   { value : 2 });
+					      expect(_.map(g.shrink(), 
+							   function(v) { 
+							       return v.value(); 
+							   }))
 						  .toEqual([1]);
 					  });
 				       it('0 is not shrunk', function() {
+					      var g = new jsqc.gen.integer(1, 
+									   { value : 0 });
 					      expect(g.shrink(0))
 						  .toEqual([]);
 					  });
 				       it('can be shown', function() {
+					      var g = new jsqc.gen.integer(1, 
+									   { value : 1 });
 					      expect(g.show(1))
 						  .toEqual("1");
 					  });
@@ -47,11 +55,12 @@ describe('jsqc', function() {
 					      var count = 100;
 					      var seen_numbers = 0;
 					      var number;
+					      var g = new jsqc.gen.integer(1, {});
 					      while(count--) {
-						  number = g.generate();
-						  if(seen[number])
+						  g = g.next();
+						  if(seen[g.value(number)])
 						      continue;
-						  seen[number] = true;
+						  seen[g.value(number)] = true;
 						  seen_numbers++;
 					      }
 					      expect(seen_numbers)
@@ -59,29 +68,29 @@ describe('jsqc', function() {
 					      
 					  });
 				       it('generates integers', function() {
-					      var value = g.generate();
-					      expect(value)
-						  .toEqual(Math.floor(value));
+					      var g = new jsqc.gen.integer(10, {});
+					      expect(g.value())
+						  .toEqual(Math.floor(g.value()));
 					  });
 				   });
 			  describe('array', function() {
-				       var g = new (jsqc.gen.array(
-							jsqc.gen.integer))();
 				       it('can be shrunk', function() {
-					      expect(g.shrink([1, 2, 3]))
+					      var g = new (jsqc.gen.array(
+							       jsqc.gen.integer))(1, { value : [ new jsqc.gen.integer(1, { value : 1}), 
+												 new jsqc.gen.integer(1, { value : 2}),
+												 new jsqc.gen.integer(1, { value : 3})] });
+
+					      expect(_.map(g.shrink(), function(v) { 
+							       return v.value(); 
+							   }))
 						  .toEqual(
 						      [[1, 2, 2], [1, 2]]
-						     );
+						  );
 					  });
 				       it('empty list cannot be shrunk', function() {
+					      var g = new (jsqc.gen.array(jsqc.gen.integer))(1, { value : []});
 					      expect(g.shrink([]))
 						  .toEqual([]);
-					  });
-				       it('can be copied', function() {
-					      var original = [1,2];
-					      var newList = g.copy(original);
-					      original[0] = "changed";
-					      expect(newList).toEqual([1, 2]);
 					  });
 				   });
 		      });
@@ -107,11 +116,15 @@ describe('jsqc', function() {
 			     });
 			  it('calls generator to produce test data', function() {
 				 function gen() {
-				     this.copy = function(value){
+				     var value = "value";
+				     this.copy = function(){
 					 return value;
-				     }
-				     this.generate = function() {
-					 return "value";
+				     };
+				     this.next = function() {
+					 return this;
+				     };
+				     this.value = function() {
+					 return value;
 				     };
 				 };
 				 jsqc.property(gen, function(value) {
@@ -120,16 +133,14 @@ describe('jsqc', function() {
 					       });
 			     });
 			  it('calls shrink to shrink failing test data', function() {
-				 function gen() {
-				     this.copy = function(value) {
+				 function gen(size, _opts) {
+				     var value = _opts.value || 2;
+				     this.value = function() {
 					 return value;
 				     };
-				     this.generate = function() {
-					 return 2;
-				     };
-				     this.shrink = function(value) {
+				     this.shrink = function() {
 					 if (value === 2)
-					     return [1];
+					     return [new gen(size, { value : value - 1})];
 				     };
 				 }
 				 var succeedingValue;

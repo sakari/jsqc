@@ -1,17 +1,16 @@
 jsqc = (function() {
 
-	    function minimize(generator, prop, starting_value) {
-		if(!generator.shrink)
-		    return starting_value;
+	    function minimize(last_failing, prop) {
+		if(!last_failing.shrink)
+		    return next;
 
-		var last_failing = starting_value;
-		var candidates = generator.shrink(starting_value);
+		var candidates = last_failing.shrink();
 		for( var i in candidates ) {
 		    try {
-			prop(generator.copy(candidates[i]));
+			prop(candidates[i].value());
 		    } catch (x) {
 			last_failing = candidates[i];
-			candidates = generator.shrink(candidates[i]);
+			candidates = candidates[i].shrink();
 		    }
 		}
 		return last_failing;
@@ -64,74 +63,74 @@ jsqc = (function() {
 			};
 		    },
 		    array : function(inner) {
-			return function() {
-			    var inner_gen = new inner();
-			    this.copy = function(value) {
-				var newValue = [];
-				for(var i in value) {
-				    newValue.push(inner_gen.copy(value[i]));
-				};
-				return newValue;
+			return function(size, _opts) {
+			    var value = ( _opts.value === undefined ? 
+					  generate():
+					  _opts.value
+					);
+
+			    this.value = function() {
+				return _.map(value, function(i) {
+						 return i.value();
+					     });				
 			    };
-			    this.shrink = function(value) {
-				if (value.length == 0)
+			    this.shrink = function() {
+				if (value.length === 0)
 				    return [];
-				var head = value[value.length - 1];
-				var result = [];
-				for(var i in inner_gen.shrink(head)) {
-				    var heads = this.copy(value);
-				    heads[heads.length - 1] = inner_gen.shrink(head)[i];
-				    result.push(heads);
-				}
-				var smaller = this.copy(value);
-				smaller.pop();
-				result.push(smaller);
-				return result;
+				return _.map(_.first(value).shrink(), 
+					     function(s) {
+						 return _.initial(value).concat([s]);
+					     }).concat([_.initial(value)]);
 			    };
-			    this.generate = function() {
-				var n = new jsqc.gen.integer().generate();
+			    function generate() {
+				var n = Math.abs(new jsqc.gen.integer(size, {}).value());
 				var array = [];
-				while(n > 0) {
-				    array.push(i.generate());
-				    n--;
+				while(n-- > 0) {
+				    array.push(new inner(size, {}));
 				} 
 				return array;
 			    };
 			};
 		    },
-		    integer : function() {
-			var size = 1;
-			this.shrink = function(value) {
+		    integer : function(size, _opts) {
+			size = size || 1;
+			var value = (_opts.value === undefined ? 
+				     generate() :
+				     _opts.value);
+
+			this.shrink = function() {
 			    if (value === 0)
 				return [];
 			    if (value < 0)
-				return [value + 1];
-			    return [value - 1];
+				return [new jsqc.gen.integer(size, 
+							     { value : value + 1})];
+			    return [new jsqc.gen.integer(size, 
+							 { value : value - 1})];
 			};
-			this.show = function(value) {
+			this.show = function() {
 			  return value.toString();  
 			};
-			this.copy = function(value) {
-			     return value;
+			this.value = function() {
+			    return value;
 			};
-			this.generate = function() {
-			    var r = Math.random() * size;
-			    size *= 2;
-			    return Math.floor(r);
+			this.next = function() {
+			   return new jsqc.gen.integer(size * 2, {}); 
+			};
+			function generate () {
+			    return Math.floor(Math.random() * size);
 			};
 		    }
 		},
 		property : function(gen, prop) {
-		    var generator = new gen();
-		    var value = generator.generate();
+		    var generator = new gen(1, {});
 		    try {
-			prop(generator.copy(value));
+			prop(generator.value());
 		    } catch (x) {
-			value = minimize(generator, prop, value);
+			var min = minimize(generator, prop);
 			throw new Error('Failing case ' + 
-					generator.show(value) + 
-					' error:' + 
-					x);
+					generator.show() + 
+					' error:' + e 
+					);
 		    }
 		}
 	    };
