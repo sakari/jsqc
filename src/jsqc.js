@@ -63,7 +63,7 @@ jsqc = (function() {
 			};
 		    },
 		    array : function(inner) {
-			return function(size, _opts) {
+			return function inner_array (size, _opts) {
 			    var value = ( _opts.value === undefined ? 
 					  generate():
 					  _opts.value
@@ -77,10 +77,10 @@ jsqc = (function() {
 			    this.shrink = function() {
 				if (value.length === 0)
 				    return [];
-				return _.map(_.first(value).shrink(), 
+				return _.map(_.last(value).shrink(), 
 					     function(s) {
-						 return _.initial(value).concat([s]);
-					     }).concat([_.initial(value)]);
+						 return new inner_array(1, { value: _.initial(value).concat([s])});
+					     }).concat([new inner_array(1, { value: _.initial(value) })]);
 			    };
 			    function generate() {
 				var n = Math.abs(new jsqc.gen.integer(size, {}).value());
