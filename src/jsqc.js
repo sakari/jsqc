@@ -64,7 +64,7 @@ jsqc = (function() {
 			};
 		    },
 		    array : function(inner) {
-			return function inner_array (size, _opts) {
+			return function inner_array (_opts) {
 			    var value = ( _opts.value === undefined ? 
 					  generate():
 					  _opts.value
@@ -80,21 +80,20 @@ jsqc = (function() {
 				    return [];
 				return _.map(_.last(value).shrink(), 
 					     function(s) {
-						 return new inner_array(1, { value: _.initial(value).concat([s])});
-					     }).concat([new inner_array(1, { value: _.initial(value) })]);
+						 return new inner_array({ value: _.initial(value).concat([s])});
+					     }).concat([new inner_array({ value: _.initial(value) })]);
 			    };
 			    function generate() {
-				var n = Math.abs(new jsqc.gen.integer(size, {}).value());
+				var n = Math.abs(new jsqc.gen.integer({}).value());
 				var array = [];
 				while(n-- > 0) {
-				    array.push(new inner(size, {}));
+				    array.push(new inner({}));
 				} 
 				return array;
 			    };
 			};
 		    },
-		    integer : function(size, _opts) {
-			size = size || 1;
+		    integer : function(_opts) {
 			var value = (_opts.value === undefined ? 
 				     generate() :
 				     _opts.value);
@@ -103,10 +102,8 @@ jsqc = (function() {
 			    if (value === 0)
 				return [];
 			    if (value < 0)
-				return [new jsqc.gen.integer(size, 
-							     { value : value + 1})];
-			    return [new jsqc.gen.integer(size, 
-							 { value : value - 1})];
+				return [new jsqc.gen.integer({ value : value + 1})];
+			    return [new jsqc.gen.integer({ value : value - 1})];
 			};
 			this.show = function() {
 			  return value.toString();  
@@ -115,10 +112,14 @@ jsqc = (function() {
 			    return value;
 			};
 			this.next = function() {
-			   return new jsqc.gen.integer(size * 2, {}); 
+			   return jsqc.resize(jsqc.size() + 1, 
+					      function() {
+						  return new jsqc.gen.integer({}); 
+					      });
+
 			};
 			function generate () {
-			    return Math.floor(Math.random() * size);
+			    return Math.floor(Math.random() * jsqc.size());
 			};
 		    }
 		},

@@ -38,8 +38,7 @@ describe('jsqc', function() {
 				   });
 			  describe('integer', function() {
 				       it('shrinking goes towards 0', function() {
-					      var g = new jsqc.gen.integer(1, 
-									   { value : 2 });
+					      var g = new jsqc.gen.integer({ value : 2 });
 					      expect(_.map(g.shrink(), 
 							   function(v) { 
 							       return v.value(); 
@@ -47,14 +46,12 @@ describe('jsqc', function() {
 						  .toEqual([1]);
 					  });
 				       it('0 is not shrunk', function() {
-					      var g = new jsqc.gen.integer(1, 
-									   { value : 0 });
+					      var g = new jsqc.gen.integer({ value : 0 });
 					      expect(g.shrink(0))
 						  .toEqual([]);
 					  });
 				       it('can be shown', function() {
-					      var g = new jsqc.gen.integer(1, 
-									   { value : 1 });
+					      var g = new jsqc.gen.integer({ value : 1 });
 					      expect(g.show(1))
 						  .toEqual("1");
 					  });
@@ -84,10 +81,10 @@ describe('jsqc', function() {
 			  describe('array', function() {
 				       it('can be shrunk', function() {
 					      var g = new (jsqc.gen.array(
-							       jsqc.gen.integer))(1, { value : [ new jsqc.gen.integer(1, { value : 1}), 
-												 new jsqc.gen.integer(1, { value : 2}),
-												 new jsqc.gen.integer(1, { value : 3})] });
-
+							       jsqc.gen.integer))({ value : [ new jsqc.gen.integer({ value : 1}), 
+											      new jsqc.gen.integer({ value : 2}),
+											      new jsqc.gen.integer({ value : 3})] });
+					      
 					      expect(_.map(g.shrink(), function(v) { 
 							       return v.value(); 
 							   }))
@@ -96,7 +93,7 @@ describe('jsqc', function() {
 						  );
 					  });
 				       it('empty list cannot be shrunk', function() {
-					      var g = new (jsqc.gen.array(jsqc.gen.integer))(1, { value : []});
+					      var g = new (jsqc.gen.array(jsqc.gen.integer))({ value : []});
 					      expect(g.shrink([]))
 						  .toEqual([]);
 					  });
