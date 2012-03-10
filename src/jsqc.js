@@ -20,9 +20,21 @@ jsqc = (function() {
 	    return {
 		gen : {
 		    async : function() {
+			var callbacks = [];
 			this.wait = function(predicate) {
-			    while(!predicate());
+			    var tries = 0;			    
+			    do {				
+				if(callbacks.length > 0)
+				    callbacks.pop()();
+			    } while (tries++ < this.DEFAULT_WAIT && !predicate());
+
+			    if (tries >= this.DEFAULT_WAIT)
+				throw new Error('Default wait count of ' + this.DEFAULT_WAIT + ' exceeded');
 			};
+			this.callback = function(cb) {
+			    callbacks.push(cb); 
+			};
+			this.DEFAULT_WAIT = 10000;
 		    },
 		    oneof : function(generators) {
 			var choises = _.map(generators, function(constr) {
@@ -154,6 +166,6 @@ jsqc = (function() {
 					' error:' + e 
 					);
 		    }
-		}
+		},
 	    };
 })();

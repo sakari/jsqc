@@ -10,7 +10,26 @@ describe('jsqc', function() {
 						     });
 					      expect(waits).toEqual(10);
 					  });
+				       it('wait is limited by a defalt wait try count of DEFAULT_WAIT', function() {
+					      var a = new jsqc.gen.async();
+					      var tries = 0;
+					      expect(function() {
+							 a.wait(function() { tries++; return false; });
+						     }).toThrow();
+					      expect(tries).toEqual(a.DEFAULT_WAIT);
+					  });
+				       it('triggers registered callbacks when waited on', function() {
+					      var a = new jsqc.gen.async();
+					      var triggered;
+					      a.callback(function() {
+							     triggered = true;
+							 });
+					      a.wait(function() { return triggered;});
+
+					      expect(triggered).toEqual(true);
+					  }); 
 				   });
+
 			  describe('oneof', function() {
 				      var g = new (jsqc.gen.oneof(
 						       [jsqc.gen.const(1),
