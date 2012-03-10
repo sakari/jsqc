@@ -14,9 +14,8 @@ describe('jsqc', function() {
 			  describe('choice', function() {
 				       var g = new (jsqc.gen.choice([1, 2]))();
 				       it('generates one of given values', function() {
-					      var value = g.generate();
-					      expect(value === 1 ||
-						     value === 2)
+					      expect(g.value() === 1 ||
+						     g.value() === 2)
 						  .toEqual(true);
 					  });
 				   });
