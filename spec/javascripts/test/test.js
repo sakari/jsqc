@@ -154,8 +154,7 @@ describe('jsqc', function() {
 					 return value;
 				     };
 				     this.shrink = function() {
-					 if (value === 2)
-					     return [new gen(size, { value : value - 1})];
+					 return [new gen(size, { value : value - 1})];
 				     };
 				 }
 				 var succeedingValue;
