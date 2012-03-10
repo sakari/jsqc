@@ -5,7 +5,11 @@ describe('jsqc', function() {
 						       [jsqc.gen.const(1),
 							jsqc.gen.const("A")]
 						   ))();
-				       it('generates values from the union of generators', function() {
+				       it('generates always values from the union of generators', function() {
+					      expect(g.value() === 1 ||
+						     g.value() === "A")
+						  .toEqual(true);
+					      var n = g.next();
 					      expect(g.value() === 1 ||
 						     g.value() === "A")
 						  .toEqual(true);

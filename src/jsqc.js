@@ -22,13 +22,16 @@ jsqc = (function() {
 			var choises = _.map(generators, function(constr) {
 						return new constr();
 					    });
-			return function() {
+			return function oneof_inner() {
 			    var choice = new (jsqc.gen.choice(choises))();
 			    this.value = function() {
 				return choice.value().value();
 			    };
 			    this.shrink = function() { 
 				return []; 
+			    };
+			    this.next = function() {
+				return new oneof_inner();
 			    };
 			};
 		    },
