@@ -33,7 +33,7 @@ jsqc = (function() {
 			};
 		    },
 		    choice : function(values, copy) {
-			return function choise_inner () {
+			return function choice_inner () {
 			    var pick = Math.floor(Math.random() * values.length);
 			    this.value = function() {
 				return (copy ? copy(values[pick]) : values[pick]);

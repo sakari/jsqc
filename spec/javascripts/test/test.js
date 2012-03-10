@@ -13,7 +13,11 @@ describe('jsqc', function() {
 				   });
 			  describe('choice', function() {
 				       var g = new (jsqc.gen.choice([1, 2]))();
-				       it('generates one of given values', function() {
+				       it('generates always one of given values', function() {
+					      expect(g.value() === 1 ||
+						     g.value() === 2)
+						  .toEqual(true);
+					      var n = g.next();
 					      expect(g.value() === 1 ||
 						     g.value() === 2)
 						  .toEqual(true);
@@ -23,6 +27,8 @@ describe('jsqc', function() {
 				      var g = new (jsqc.gen.const("constant"))();
 				       it('generates always the same value', function() {
 					      expect(g.value())
+						  .toEqual("constant");
+					      expect(g.next().value())
 						  .toEqual("constant");
 					  });
 				   });
