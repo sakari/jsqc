@@ -1,5 +1,16 @@
 describe('jsqc', function() {
 	     describe('gen', function(){
+			  describe('async', function(){
+				       it('can be waited on until a given predicate holds', function() {
+					      var a = new jsqc.gen.async();
+					      var waits = 0;
+					      a.wait(function() {
+							 waits++;
+							 return waits >= 10;
+						     });
+					      expect(waits).toEqual(10);
+					  });
+				   });
 			  describe('oneof', function() {
 				      var g = new (jsqc.gen.oneof(
 						       [jsqc.gen.const(1),
@@ -9,7 +20,7 @@ describe('jsqc', function() {
 					      expect(g.value() === 1 ||
 						     g.value() === "A")
 						  .toEqual(true);
-					      var n = g.next();
+					      var n = g.next(); 
 					      expect(g.value() === 1 ||
 						     g.value() === "A")
 						  .toEqual(true);

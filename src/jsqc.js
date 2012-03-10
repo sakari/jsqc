@@ -19,6 +19,11 @@ jsqc = (function() {
 
 	    return {
 		gen : {
+		    async : function() {
+			this.wait = function(predicate) {
+			    while(!predicate());
+			};
+		    },
 		    oneof : function(generators) {
 			var choises = _.map(generators, function(constr) {
 						return new constr();
