@@ -102,7 +102,17 @@ describe('jsqc', function() {
 					  });
 				   });
 		      });
-
+	     
+	     describe('resize', function() {
+			  it('sets the global size for the execution of the function', function() {
+				 var size;
+				 var set_size = 5;
+				 jsqc.resize(set_size, function() {
+						 size = jsqc.size();
+					     });
+				 expect(size).toEqual(set_size);
+			     });
+		      });
 	     describe('#property', function() {
 			  it('produces test data', function() {
 				 var values = [];

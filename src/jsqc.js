@@ -1,4 +1,5 @@
 jsqc = (function() {
+	    var __size = 1;
 
 	    function minimize(last_failing, prop) {
 		if(!last_failing.shrink)
@@ -120,6 +121,21 @@ jsqc = (function() {
 			    return Math.floor(Math.random() * size);
 			};
 		    }
+		},
+		size : function() {
+		    return __size;  
+		},
+		resize : function(size, block) {
+		    var original_size = jsqc.size();
+		    var result;
+		    try {
+			__size = size;
+			result = block();
+		    } catch (x) {
+			__size = original_size;
+			throw x;
+		    }
+		    return result;
 		},
 		property : function(gen, prop) {
 		    var generator = new gen(1, {});
