@@ -18,47 +18,44 @@ jsqc = (function() {
 
 	    return {
 		gen : {
-		    oneof : function(gens) {
-			var generators = [];
-			for(var i in gens) {
-			    generators.push(new gens[i]());
-			}
+		    oneof : function(generators) {
+			var choises = _.map(generators, function(constr) {
+						return new constr();
+					    });
 			return function() {
-			    this.generate = function() {
-				var choice = new (jsqc.gen.choice(generators))();
-				return choice.generate().generate();
+			    var choice = new (jsqc.gen.choice(choises))();
+			    this.value = function() {
+				return choice.value().value();
 			    };
 			    this.shrink = function() { 
 				return []; 
 			    };
 			};
 		    },
-		    choice : function(values, gen) {
-			return function() {
-			    this.generate = function() {
-				var i = Math.floor(Math.random() * values.length);
-				return values[i];
-			    };
-			    this.copy = function(value) {
-				if(gen)
-				    return new gen().copy(value);
-				return value;
+		    choice : function(values, copy) {
+			return function choise_inner () {
+			    var pick = Math.floor(Math.random() * values.length);
+			    this.value = function() {
+				return (copy ? copy(values[pick]) : values[pick]);
 			    };
 			    this.shrink = function() {
 				return [];
+			    };
+			    this.next = function() {
+				return new choice_inner();
 			    };
 			};
 		    },
-		    const : function(value) {
+		    const : function(value, copy) {
 			return function() {
-			    this.generate = function() {
-				return value;
-			    };
-			    this.copy = function() {
-				return value;
+			    this.value = function() {
+				return (copy ? copy(value) : value);
 			    };
 			    this.shrink = function() {
 				return [];
+			    };
+			    this.next = function() {
+				return this;
 			    };
 			};
 		    },

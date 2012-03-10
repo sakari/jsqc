@@ -6,9 +6,8 @@ describe('jsqc', function() {
 							jsqc.gen.const("A")]
 						   ))();
 				       it('generates values from the union of generators', function() {
-					      var value = g.generate();
-					      expect(value === 1 ||
-						     value === "A")
+					      expect(g.value() === 1 ||
+						     g.value() === "A")
 						  .toEqual(true);
 					  });
 				   });
@@ -23,8 +22,8 @@ describe('jsqc', function() {
 				   });
 			  describe('const', function() {
 				      var g = new (jsqc.gen.const("constant"))();
-				       it('generates the same value', function() {
-					      expect(g.generate())
+				       it('generates always the same value', function() {
+					      expect(g.value())
 						  .toEqual("constant");
 					  });
 				   });
