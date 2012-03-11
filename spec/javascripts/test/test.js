@@ -30,7 +30,7 @@ describe('jsqc', function() {
 					  });
 				       
 				       describe('shrink', function(){
-						    it('removes triggered callback indexes', function() {
+						    it('removes triggered callback indexes to simplify the execution', function() {
 							   var a = new jsqc.gen.async();
 							   var only_second;
 							   var only_first;
@@ -54,6 +54,16 @@ describe('jsqc', function() {
 								  });
 							   expect(only_first && only_second).toEqual(true);
 						       });
+						    it('throws Skip if after executing the required callbacks the wait does not finish', function(){
+							   var a = new jsqc.gen.async();
+							   a.callback();
+							   expect(function() { a.wait(); }).toThrow();
+							   _.each(a.shrink(), function(shrunk) {
+								      shrunk.callback();
+								      shrunk.callback();
+								      expect(function() { shrunk.wait()}).toThrow(new jsqc.Skip());
+								  });
+						    });
 						});
 				   });
 

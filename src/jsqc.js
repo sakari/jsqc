@@ -38,7 +38,7 @@ jsqc = (function() {
 				var ix = undefined;
 				if(required_callback_order !== undefined) {
 				    if (required_callback_order.length === 0)
-					throw new Error('All required callbacks triggered');
+					throw new jsqc.Skip();
 				    ix = required_callback_order.shift();
 				} else {
 				    _.each(callbacks, function(v, i) { 
@@ -204,5 +204,6 @@ jsqc = (function() {
 					);
 		    }
 		},
+		Skip : function() {}
 	    };
 })();
