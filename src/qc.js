@@ -175,46 +175,60 @@ qc = (function() {
 		    }
 		    return result;
 		},
-		_minimize : function(last_failing, prop) {
+		_minimize_at_position : function(position, generators, prop) {
+		    generators = generators.slice();
+		    var candidates = generators[position].shrink();
 		    var shrinks = 0;
-		    if(!last_failing.shrink)
-			return { data : last_failing
-				 , shrinks : shrinks };
-		    
-		    console.log('shrinking..');
-		    var candidates = last_failing.shrink();
 		    for( var i in candidates ) {
 			console.log(candidates[i].show());
 			try {
-			    prop(candidates[i].value());
+			    var value = _.map(generators, function(g) { return g.value(); });
+			    value[position] = candidates[i].value();
+			    prop.apply({}, value);
 			} catch (x) {
 			    if (x instanceof qc.Skip)
 				continue;
 			    shrinks++;
-			    last_failing = candidates[i];
-			    candidates = candidates[i].shrink();
+
+			    generators[position] = candidates[i];
+			    candidates = generators[position].shrink();
 			}
 		    }
-		    return { data : last_failing, shrinks : shrinks };
+		    return { minimized : generators, shrinks : shrinks };
 		},
-		property : function(gen, prop) {
-		    var generator = new gen({});
+		_minimize : function(last_failing, prop) {
+		    var data;
+		    var total_shrinks = 0;
+		    console.log('shrinking..');
+		    for (var shrink_position in last_failing) {
+			data = this._minimize_at_position(shrink_position, last_failing, prop);
+			total_shrinks += data.shrinks;
+			last_failing = data.minimized;
+		    }
+		    return { minimized : last_failing, shrinks : total_shrinks };
+		},
+		property : function() {
+		    var gens = [];
+		    for (var i = 0; i < arguments.length - 1; i++)
+			gens.push(arguments[i]);
+		    var prop = arguments[arguments.length - 1];
+		    var generators = _.map(gens, function(g) { return new g({}); });
 		    try {
 			_.times(qc.TRIES, function() {
 				    try {
-					prop(generator.value());
+					prop.apply({}, _.map(generators, function(g) { return g.value(); }));
 				    } catch (x) {
 					if (x instanceof qc.Skip)
 					    return;
 					throw x;
 				    }
-				    generator = generator.next();
+				    generators = _.map(generators, function(g) { return g.next(); });
 				});
 		    } catch (x) {
-			var min = this._minimize(generator, prop);
+			var min = this._minimize(generators, prop);
 			throw new Error('Failing case after ' +
 					min.shrinks + ' shrinks ' +
-					min.data.show() + 
+					_.map(min.minimized, function(m) { return m.show(); }).join(', ') + 
 					' error: ' + x 
 					);
 		    }

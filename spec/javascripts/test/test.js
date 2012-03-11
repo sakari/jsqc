@@ -187,6 +187,15 @@ describe('qc', function() {
 				 expect(values.length)
 				     .toBeGreaterThan(0);
 			     });
+			  it('can be passed multiple generators', function() {
+				 var values;
+				 qc.property(qc.gen.const('first'), 
+					     qc.gen.const('second'), 
+					     function(fst, snd) {
+						 values = [fst, snd];
+					     });
+				 expect(values).toEqual(['first', 'second']);
+			     });
 			  it('produces qc.TRIES test cases', function() {
 				 var tries = 0;
 				 qc.property(qc.gen.integer, function() { tries++; });
