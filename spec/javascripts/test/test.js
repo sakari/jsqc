@@ -27,7 +27,34 @@ describe('jsqc', function() {
 					      a.wait(function() { return triggered;});
 
 					      expect(triggered).toEqual(true);
-					  }); 
+					  });
+				       
+				       describe('shrink', function(){
+						    it('removes triggered callback indexes', function() {
+							   var a = new jsqc.gen.async();
+							   var only_second;
+							   var only_first;
+
+							   a.callback(function() {});
+							   a.callback(function() {});
+							   expect(function() { a.wait(function() {}); }).toThrow();
+
+							   _.each(a.shrink(), function(shrunk) {
+								      var first = false;
+								      var second = false;
+								      shrunk.callback(function() { first = true; });
+								      shrunk.callback(function() { second = true; });
+								      expect(function() { shrunk.wait(function() {}); }).toThrow();
+								      if(!first && second)
+									  only_second = true;
+								      else if(first && !second)
+									  only_first = true;
+								      else
+									  throw new Error('one callback should have been called: ' + first + ' ' + second);
+								  });
+							   expect(only_first && only_second).toEqual(true);
+						       });
+						});
 				   });
 
 			  describe('oneof', function() {

@@ -19,20 +19,57 @@ jsqc = (function() {
 
 	    return {
 		gen : {
-		    async : function() {
-			var callbacks = [];
+		    async : function(_opts) {
+			var callbacks = {};
+			var callback_selection_order = [];
+			var required_callback_order = (_opts ? _opts.callback_order : undefined);
+			var callback_index = 0;
+
+			this.show = function() {
+			    return JSON.stringify({ callback_count : callbacks.length, 
+						    triggered : callback_selection_order,
+						    required_callback_order : required_callback_order
+						  });
+			};
 			this.wait = function(predicate) {
 			    var tries = 0;			    
-			    do {				
-				if(callbacks.length > 0)
-				    callbacks.pop()();
+			    do {
+				var pick = undefined;
+				var ix = undefined;
+				if(required_callback_order !== undefined) {
+				    if (required_callback_order.length === 0)
+					throw new Error('All required callbacks triggered');
+				    ix = required_callback_order.shift();
+				} else {
+				    _.each(callbacks, function(v, i) { 
+					       if (!v.already_triggered) {
+						   ix = i;
+					       }
+					   });
+				}
+				if (ix === undefined || !callbacks[ix])
+				    continue;
+				callback_selection_order.push(ix);
+				callbacks[ix].already_triggered = true;
+				callbacks[ix].cb();
+
 			    } while (tries++ < this.DEFAULT_WAIT && !predicate());
 
 			    if (tries >= this.DEFAULT_WAIT)
 				throw new Error('Default wait count of ' + this.DEFAULT_WAIT + ' exceeded');
 			};
 			this.callback = function(cb) {
-			    callbacks.push(cb); 
+			    callbacks[callback_index++] = { cb : cb };
+			};
+			this.shrink = function() {
+			    if (callback_selection_order.length === 0) {
+				return [];
+			    }
+			    return _.map(callback_selection_order, function(value, i) {
+					     var smaller = callback_selection_order.slice();
+					     smaller.splice(i, 1);
+					     return new jsqc.gen.async({ callback_order : smaller});
+					 });
 			};
 			this.DEFAULT_WAIT = 10000;
 		    },
