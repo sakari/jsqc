@@ -207,7 +207,9 @@ jsqc = (function() {
 					if (x instanceof jsqc.Skip)
 					    return;
 					throw x;
-				    }});
+				    }
+				    generator = generator.next();
+				});
 		    } catch (x) {
 			var min = this._minimize(generator, prop);
 			throw new Error('Failing case after ' +

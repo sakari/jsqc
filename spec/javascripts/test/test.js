@@ -187,10 +187,21 @@ describe('jsqc', function() {
 				 expect(values.length)
 				     .toBeGreaterThan(0);
 			     });
-			  it('produces jsqc.TRIES test cases for each property', function() {
+			  it('produces jsqc.TRIES test cases', function() {
 				 var tries = 0;
 				 jsqc.property(jsqc.gen.integer, function() { tries++; });
 				 expect(tries).toEqual(jsqc.TRIES);
+			     });
+
+			  it('produces different test values', function() {
+				 var tries = 0;
+				 var seen = [];
+				 jsqc.property(jsqc.gen.integer, function(value) {  
+						   if (value in seen)
+						       return;
+						   seen.push(value);
+					       });
+				 expect(seen.length).toBeGreaterThan(jsqc.TRIES / 10);
 			     });
 
 			  it('throws when fails', function() {
