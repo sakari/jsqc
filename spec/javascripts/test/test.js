@@ -1,8 +1,8 @@
-describe('jsqc', function() {
+describe('qc', function() {
 	     describe('gen', function(){
 			  describe('async', function(){
 				       it('can be waited on until a given predicate holds', function() {
-					      var a = new jsqc.gen.async();
+					      var a = new qc.gen.async();
 					      var waits = 0;
 					      a.wait(function() {
 							 waits++;
@@ -11,7 +11,7 @@ describe('jsqc', function() {
 					      expect(waits).toEqual(10);
 					  });
 				       it('wait is limited by a defalt wait try count of DEFAULT_WAIT', function() {
-					      var a = new jsqc.gen.async();
+					      var a = new qc.gen.async();
 					      var tries = 0;
 					      expect(function() {
 							 a.wait(function() { tries++; return false; });
@@ -19,7 +19,7 @@ describe('jsqc', function() {
 					      expect(tries).toEqual(a.DEFAULT_WAIT);
 					  });
 				       it('triggers registered callbacks when waited on', function() {
-					      var a = new jsqc.gen.async();
+					      var a = new qc.gen.async();
 					      var triggered;
 					      a.callback(function() {
 							     triggered = true;
@@ -31,7 +31,7 @@ describe('jsqc', function() {
 				       
 				       describe('shrink', function(){
 						    it('removes triggered callback indexes to simplify the execution', function() {
-							   var a = new jsqc.gen.async();
+							   var a = new qc.gen.async();
 							   var only_second;
 							   var only_first;
 
@@ -55,22 +55,22 @@ describe('jsqc', function() {
 							   expect(only_first && only_second).toEqual(true);
 						       });
 						    it('throws Skip if after executing the required callbacks the wait does not finish', function(){
-							   var a = new jsqc.gen.async();
+							   var a = new qc.gen.async();
 							   a.callback();
 							   expect(function() { a.wait(); }).toThrow();
 							   _.each(a.shrink(), function(shrunk) {
 								      shrunk.callback();
 								      shrunk.callback();
-								      expect(function() { shrunk.wait()}).toThrow(new jsqc.Skip());
+								      expect(function() { shrunk.wait()}).toThrow(new qc.Skip());
 								  });
 						    });
 						});
 				   });
 
 			  describe('oneof', function() {
-				      var g = new (jsqc.gen.oneof(
-						       [jsqc.gen.const(1),
-							jsqc.gen.const("A")]
+				      var g = new (qc.gen.oneof(
+						       [qc.gen.const(1),
+							qc.gen.const("A")]
 						   ))();
 				       it('generates always values from the union of generators', function() {
 					      expect(g.value() === 1 ||
@@ -83,7 +83,7 @@ describe('jsqc', function() {
 					  });
 				   });
 			  describe('choice', function() {
-				       var g = new (jsqc.gen.choice([1, 2]))();
+				       var g = new (qc.gen.choice([1, 2]))();
 				       it('generates always one of given values', function() {
 					      expect(g.value() === 1 ||
 						     g.value() === 2)
@@ -95,7 +95,7 @@ describe('jsqc', function() {
 					  });
 				   });
 			  describe('const', function() {
-				      var g = new (jsqc.gen.const("constant"))();
+				      var g = new (qc.gen.const("constant"))();
 				       it('generates always the same value', function() {
 					      expect(g.value())
 						  .toEqual("constant");
@@ -105,7 +105,7 @@ describe('jsqc', function() {
 				   });
 			  describe('integer', function() {
 				       it('shrinking goes towards 0', function() {
-					      var g = new jsqc.gen.integer({ value : 2 });
+					      var g = new qc.gen.integer({ value : 2 });
 					      expect(_.map(g.shrink(), 
 							   function(v) { 
 							       return v.value(); 
@@ -113,12 +113,12 @@ describe('jsqc', function() {
 						  .toEqual([1]);
 					  });
 				       it('0 is not shrunk', function() {
-					      var g = new jsqc.gen.integer({ value : 0 });
+					      var g = new qc.gen.integer({ value : 0 });
 					      expect(g.shrink(0))
 						  .toEqual([]);
 					  });
 				       it('can be shown', function() {
-					      var g = new jsqc.gen.integer({ value : 1 });
+					      var g = new qc.gen.integer({ value : 1 });
 					      expect(g.show(1))
 						  .toEqual("1");
 					  });
@@ -127,7 +127,7 @@ describe('jsqc', function() {
 					      var count = 100;
 					      var seen_numbers = 0;
 					      var number;
-					      var g = new jsqc.gen.integer(1, {});
+					      var g = new qc.gen.integer(1, {});
 					      while(count--) {
 						  g = g.next();
 						  if(seen[g.value(number)])
@@ -140,17 +140,17 @@ describe('jsqc', function() {
 					      
 					  });
 				       it('generates integers', function() {
-					      var g = new jsqc.gen.integer(10, {});
+					      var g = new qc.gen.integer(10, {});
 					      expect(g.value())
 						  .toEqual(Math.floor(g.value()));
 					  });
 				   });
 			  describe('array', function() {
 				       it('can be shrunk', function() {
-					      var g = new (jsqc.gen.array(
-							       jsqc.gen.integer))({ value : [ new jsqc.gen.integer({ value : 1}), 
-											      new jsqc.gen.integer({ value : 2}),
-											      new jsqc.gen.integer({ value : 3})] });
+					      var g = new (qc.gen.array(
+							       qc.gen.integer))({ value : [ new qc.gen.integer({ value : 1}), 
+											      new qc.gen.integer({ value : 2}),
+											      new qc.gen.integer({ value : 3})] });
 					      
 					      expect(_.map(g.shrink(), function(v) { 
 							       return v.value(); 
@@ -160,7 +160,7 @@ describe('jsqc', function() {
 						  );
 					  });
 				       it('empty list cannot be shrunk', function() {
-					      var g = new (jsqc.gen.array(jsqc.gen.integer))({ value : []});
+					      var g = new (qc.gen.array(qc.gen.integer))({ value : []});
 					      expect(g.shrink([]))
 						  .toEqual([]);
 					  });
@@ -171,8 +171,8 @@ describe('jsqc', function() {
 			  it('sets the global size for the execution of the function', function() {
 				 var size;
 				 var set_size = 5;
-				 jsqc.resize(set_size, function() {
-						 size = jsqc.size();
+				 qc.resize(set_size, function() {
+						 size = qc.size();
 					     });
 				 expect(size).toEqual(set_size);
 			     });
@@ -180,33 +180,33 @@ describe('jsqc', function() {
 	     describe('#property', function() {
 			  it('produces test data', function() {
 				 var values = [];
-				 jsqc.property(jsqc.gen.integer,
+				 qc.property(qc.gen.integer,
 					       function(integer) {
 						   values.push(integer);
 					       });
 				 expect(values.length)
 				     .toBeGreaterThan(0);
 			     });
-			  it('produces jsqc.TRIES test cases', function() {
+			  it('produces qc.TRIES test cases', function() {
 				 var tries = 0;
-				 jsqc.property(jsqc.gen.integer, function() { tries++; });
-				 expect(tries).toEqual(jsqc.TRIES);
+				 qc.property(qc.gen.integer, function() { tries++; });
+				 expect(tries).toEqual(qc.TRIES);
 			     });
 
 			  it('produces different test values', function() {
 				 var tries = 0;
 				 var seen = [];
-				 jsqc.property(jsqc.gen.integer, function(value) {  
+				 qc.property(qc.gen.integer, function(value) {  
 						   if (value in seen)
 						       return;
 						   seen.push(value);
 					       });
-				 expect(seen.length).toBeGreaterThan(jsqc.TRIES / 10);
+				 expect(seen.length).toBeGreaterThan(qc.TRIES / 10);
 			     });
 
 			  it('throws when fails', function() {
 				 expect(function() {
-					    jsqc.property(jsqc.gen.integer, 
+					    qc.property(qc.gen.integer, 
 							  function(){
 							      throw new Error();
 							  });
@@ -225,7 +225,7 @@ describe('jsqc', function() {
 					 return value;
 				     };
 				 };
-				 jsqc.property(gen, function(value) {
+				 qc.property(gen, function(value) {
 						   expect(value)
 						       .toEqual("value");
 					       });
@@ -245,7 +245,7 @@ describe('jsqc', function() {
 				 }
 				 var succeedingValue;
 				 expect(function() {
-					    jsqc.property(gen, function(value) {
+					    qc.property(gen, function(value) {
 							      if(value > 1)
 								  throw new Error();
 							      succeedingValue = value;
@@ -253,12 +253,12 @@ describe('jsqc', function() {
 				     .toThrow();
 				 expect(succeedingValue).toEqual(1);
 			     });
-			  it('skips the test case if it throws jsqc.Skip', function() {
-				 jsqc.property(jsqc.gen.integer, function() {
-						   throw new jsqc.Skip();
+			  it('skips the test case if it throws qc.Skip', function() {
+				 qc.property(qc.gen.integer, function() {
+						   throw new qc.Skip();
 					       });
 			     });
-			  it('minimization skips tests that throw jsqc.Skip', function() {
+			  it('minimization skips tests that throw qc.Skip', function() {
 				 function gen (opts) {
 				     this.value = function() {
 					 return opts.value || "fail";
@@ -277,11 +277,11 @@ describe('jsqc', function() {
 				     };
 				 };
 				 expect(function() {
-					    jsqc.property(gen, function(value) {
+					    qc.property(gen, function(value) {
 							      if (value === "fail")
 								  throw new Error();
 							      if (value === "skip shrunk")
-								  throw new jsqc.Skip();
+								  throw new qc.Skip();
 							      throw new Error('unknown input ' + value);
 							  });
 					}).toThrow(new Error("Failing case after 0 shrinks fail error: Error"));

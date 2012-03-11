@@ -1,4 +1,4 @@
-jsqc = (function() {
+qc = (function() {
 	    var __size = 1;
 	    return {
 		gen : {
@@ -21,7 +21,7 @@ jsqc = (function() {
 				var ix = undefined;
 				if(required_callback_order !== undefined) {
 				    if (required_callback_order.length === 0)
-					throw new jsqc.Skip();
+					throw new qc.Skip();
 				    ix = required_callback_order.shift();
 				} else {
 				    _.each(callbacks, function(v, i) { 
@@ -51,7 +51,7 @@ jsqc = (function() {
 			    return _.map(callback_selection_order, function(value, i) {
 					     var smaller = callback_selection_order.slice();
 					     smaller.splice(i, 1);
-					     return new jsqc.gen.async({ callback_order : smaller});
+					     return new qc.gen.async({ callback_order : smaller});
 					 });
 			};
 			this.DEFAULT_WAIT = 10000;
@@ -61,7 +61,7 @@ jsqc = (function() {
 						return new constr();
 					    });
 			return function oneof_inner() {
-			    var choice = new (jsqc.gen.choice(choises))();
+			    var choice = new (qc.gen.choice(choises))();
 			    this.value = function() {
 				return choice.value().value();
 			    };
@@ -121,7 +121,7 @@ jsqc = (function() {
 					     }).concat([new inner_array({ value: _.initial(value) })]);
 			    };
 			    function generate() {
-				var n = Math.abs(new jsqc.gen.integer({}).value());
+				var n = Math.abs(new qc.gen.integer({}).value());
 				var array = [];
 				while(n-- > 0) {
 				    array.push(new inner({}));
@@ -139,8 +139,8 @@ jsqc = (function() {
 			    if (value === 0)
 				return [];
 			    if (value < 0)
-				return [new jsqc.gen.integer({ value : value + 1})];
-			    return [new jsqc.gen.integer({ value : value - 1})];
+				return [new qc.gen.integer({ value : value + 1})];
+			    return [new qc.gen.integer({ value : value - 1})];
 			};
 			this.show = function() {
 			  return value.toString();  
@@ -149,14 +149,14 @@ jsqc = (function() {
 			    return value;
 			};
 			this.next = function() {
-			   return jsqc.resize(jsqc.size() + 1, 
+			   return qc.resize(qc.size() + 1, 
 					      function() {
-						  return new jsqc.gen.integer({}); 
+						  return new qc.gen.integer({}); 
 					      });
 
 			};
 			function generate () {
-			    return Math.floor(Math.random() * jsqc.size());
+			    return Math.floor(Math.random() * qc.size());
 			};
 		    }
 		},
@@ -164,7 +164,7 @@ jsqc = (function() {
 		    return __size;  
 		},
 		resize : function(size, block) {
-		    var original_size = jsqc.size();
+		    var original_size = qc.size();
 		    var result;
 		    try {
 			__size = size;
@@ -188,7 +188,7 @@ jsqc = (function() {
 			try {
 			    prop(candidates[i].value());
 			} catch (x) {
-			    if (x instanceof jsqc.Skip)
+			    if (x instanceof qc.Skip)
 				continue;
 			    shrinks++;
 			    last_failing = candidates[i];
@@ -200,11 +200,11 @@ jsqc = (function() {
 		property : function(gen, prop) {
 		    var generator = new gen({});
 		    try {
-			_.times(jsqc.TRIES, function() {
+			_.times(qc.TRIES, function() {
 				    try {
 					prop(generator.value());
 				    } catch (x) {
-					if (x instanceof jsqc.Skip)
+					if (x instanceof qc.Skip)
 					    return;
 					throw x;
 				    }
