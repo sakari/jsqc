@@ -239,6 +239,33 @@ describe('jsqc', function() {
 						   throw new jsqc.Skip();
 					       });
 			     });
+			  it('minimization skips tests that throw jsqc.Skip', function() {
+				 function gen (opts) {
+				     this.value = function() {
+					 return opts.value || "fail";
+				     };
+				     this.show = function() {
+					  return this.value();
+				     };
+				     this.shrink = function() {
+					 if (this.value() === "fail") {
+					     return [new gen({value: "skip shrunk"})];
+					 }
+					 if (this.value() === "skip shrunk") {
+					     throw new Error('this value should not be tried to shrink as it is skipped');
+					 }
+					 return [];
+				     };
+				 };
+				 expect(function() {
+					    jsqc.property(gen, function(value) {
+							      if (value === "fail")
+								  throw new Error();
+							      if (value === "skip shrunk")
+								  throw new jsqc.Skip();
+							      throw new Error('unknown input ' + value);
+							  });
+					}).toThrow(new Error("Failing case fail error: Error"));
+			     });
 		      });
-	     
 	 });

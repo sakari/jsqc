@@ -1,22 +1,5 @@
 jsqc = (function() {
 	    var __size = 1;
-
-	    function minimize(last_failing, prop) {
-		if(!last_failing.shrink)
-		    return next;
-
-		var candidates = last_failing.shrink();
-		for( var i in candidates ) {
-		    try {
-			prop(candidates[i].value());
-		    } catch (x) {
-			last_failing = candidates[i];
-			candidates = candidates[i].shrink();
-		    }
-		}
-		return last_failing;
-	    }
-
 	    return {
 		gen : {
 		    async : function(_opts) {
@@ -192,17 +175,34 @@ jsqc = (function() {
 		    }
 		    return result;
 		},
+		_minimize : function(last_failing, prop) {
+		    if(!last_failing.shrink)
+			return next;
+		    
+		    var candidates = last_failing.shrink();
+		    for( var i in candidates ) {
+			try {
+			    prop(candidates[i].value());
+			} catch (x) {
+			    if (x instanceof jsqc.Skip)
+				continue;
+			    last_failing = candidates[i];
+			    candidates = candidates[i].shrink();
+			}
+		    }
+		    return last_failing;
+		},
 		property : function(gen, prop) {
-		    var generator = new gen(1, {});
+		    var generator = new gen({});
 		    try {
 			prop(generator.value());
 		    } catch (x) {
 			if (x instanceof jsqc.Skip)
 			    return;
-			var min = minimize(generator, prop);
+			var min = this._minimize(generator, prop);
 			throw new Error('Failing case ' + 
 					generator.show() + 
-					' error:' + x 
+					' error: ' + x 
 					);
 		    }
 		},
