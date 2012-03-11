@@ -197,10 +197,12 @@ jsqc = (function() {
 		    try {
 			prop(generator.value());
 		    } catch (x) {
+			if (x instanceof jsqc.Skip)
+			    return;
 			var min = minimize(generator, prop);
 			throw new Error('Failing case ' + 
 					generator.show() + 
-					' error:' + e 
+					' error:' + x 
 					);
 		    }
 		},

@@ -234,6 +234,11 @@ describe('jsqc', function() {
 				     .toThrow();
 				 expect(succeedingValue).toEqual(1);
 			     });
+			  it('skips the test case if it throws jsqc.Skip', function() {
+				 jsqc.property(jsqc.gen.integer, function() {
+						   throw new jsqc.Skip();
+					       });
+			     });
 		      });
 	     
 	 });
