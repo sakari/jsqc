@@ -187,6 +187,11 @@ describe('jsqc', function() {
 				 expect(values.length)
 				     .toBeGreaterThan(0);
 			     });
+			  it('produces jsqc.TRIES test cases for each property', function() {
+				 var tries = 0;
+				 jsqc.property(jsqc.gen.integer, function() { tries++; });
+				 expect(tries).toEqual(jsqc.TRIES);
+			     });
 
 			  it('throws when fails', function() {
 				 expect(function() {
@@ -219,6 +224,9 @@ describe('jsqc', function() {
 				     var value = _opts.value || 2;
 				     this.value = function() {
 					 return value;
+				     };
+				     this.show = function() {
+					return value.toString(); 
 				     };
 				     this.shrink = function() {
 					 return [new gen({ value : value - 1})];
@@ -265,7 +273,7 @@ describe('jsqc', function() {
 								  throw new jsqc.Skip();
 							      throw new Error('unknown input ' + value);
 							  });
-					}).toThrow(new Error("Failing case fail error: Error"));
+					}).toThrow(new Error("Failing case after 0 shrinks fail error: Error"));
 			     });
 		      });
 	 });

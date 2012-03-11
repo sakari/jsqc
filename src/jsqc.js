@@ -176,36 +176,49 @@ jsqc = (function() {
 		    return result;
 		},
 		_minimize : function(last_failing, prop) {
+		    var shrinks = 0;
 		    if(!last_failing.shrink)
-			return next;
+			return { data : last_failing
+				 , shrinks : shrinks };
 		    
+		    console.log('shrinking..');
 		    var candidates = last_failing.shrink();
 		    for( var i in candidates ) {
+			console.log(candidates[i].show());
 			try {
 			    prop(candidates[i].value());
 			} catch (x) {
 			    if (x instanceof jsqc.Skip)
 				continue;
+			    shrinks++;
 			    last_failing = candidates[i];
 			    candidates = candidates[i].shrink();
 			}
 		    }
-		    return last_failing;
+		    return { data : last_failing, shrinks : shrinks };
 		},
 		property : function(gen, prop) {
 		    var generator = new gen({});
 		    try {
-			prop(generator.value());
+			_.times(jsqc.TRIES, function() {
+				    try {
+					prop(generator.value());
+				    } catch (x) {
+					if (x instanceof jsqc.Skip)
+					    return;
+					throw x;
+				    }});
 		    } catch (x) {
-			if (x instanceof jsqc.Skip)
-			    return;
 			var min = this._minimize(generator, prop);
-			throw new Error('Failing case ' + 
-					generator.show() + 
+			throw new Error('Failing case after ' +
+					min.shrinks + ' shrinks ' +
+					min.data.show() + 
 					' error: ' + x 
 					);
 		    }
 		},
-		Skip : function() {}
+		Skip : function() {},
+		TRIES : 100
+
 	    };
 })();
