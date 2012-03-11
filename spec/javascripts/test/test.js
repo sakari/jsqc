@@ -215,13 +215,13 @@ describe('jsqc', function() {
 					       });
 			     });
 			  it('calls shrink to shrink failing test data', function() {
-				 function gen(size, _opts) {
+				 function gen(_opts) {
 				     var value = _opts.value || 2;
 				     this.value = function() {
 					 return value;
 				     };
 				     this.shrink = function() {
-					 return [new gen(size, { value : value - 1})];
+					 return [new gen({ value : value - 1})];
 				     };
 				 }
 				 var succeedingValue;
