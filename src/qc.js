@@ -7,42 +7,44 @@ qc = (function() {
 			var callback_selection_order = [];
 			var required_callback_order = (_opts ? _opts.callback_order : undefined);
 			var callback_index = 0;
-
+			var parent = this;
+			this.value = function() {
+			    return new (function async_value() {
+					    this.wait = function(predicate) {
+						var tries = 0;
+						do {
+						    var pick = undefined;
+						    var ix = undefined;
+						    if(required_callback_order !== undefined) {
+							if (required_callback_order.length === 0)
+							    throw new qc.Skip();
+							ix = required_callback_order.shift();
+						    } else {
+							_.each(callbacks, function(v, i) { 
+								   if (!v.already_triggered) {
+								       ix = i;
+								   }
+							       });
+						    }
+						    if (ix === undefined || !callbacks[ix])
+							continue;
+						    callback_selection_order.push(ix);
+						    callbacks[ix].already_triggered = true;
+						    callbacks[ix].cb();
+						} while (tries++ < parent.DEFAULT_WAIT && !predicate());
+						if (tries >= parent.DEFAULT_WAIT)
+						    throw new Error('Default wait count of ' + parent.DEFAULT_WAIT + ' exceeded');
+					    };
+					    this.callback = function(cb) {
+						callbacks[callback_index++] = { cb : cb };
+					    };
+					})();
+			};
 			this.show = function() {
 			    return JSON.stringify({ callback_count : callbacks.length, 
 						    triggered : callback_selection_order,
 						    required_callback_order : required_callback_order
 						  });
-			};
-			this.wait = function(predicate) {
-			    var tries = 0;			    
-			    do {
-				var pick = undefined;
-				var ix = undefined;
-				if(required_callback_order !== undefined) {
-				    if (required_callback_order.length === 0)
-					throw new qc.Skip();
-				    ix = required_callback_order.shift();
-				} else {
-				    _.each(callbacks, function(v, i) { 
-					       if (!v.already_triggered) {
-						   ix = i;
-					       }
-					   });
-				}
-				if (ix === undefined || !callbacks[ix])
-				    continue;
-				callback_selection_order.push(ix);
-				callbacks[ix].already_triggered = true;
-				callbacks[ix].cb();
-
-			    } while (tries++ < this.DEFAULT_WAIT && !predicate());
-
-			    if (tries >= this.DEFAULT_WAIT)
-				throw new Error('Default wait count of ' + this.DEFAULT_WAIT + ' exceeded');
-			};
-			this.callback = function(cb) {
-			    callbacks[callback_index++] = { cb : cb };
 			};
 			this.shrink = function() {
 			    if (callback_selection_order.length === 0) {

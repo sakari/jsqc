@@ -2,7 +2,7 @@ describe('qc', function() {
 	     describe('gen', function(){
 			  describe('async', function(){
 				       it('can be waited on until a given predicate holds', function() {
-					      var a = new qc.gen.async();
+					      var a = new qc.gen.async().value();
 					      var waits = 0;
 					      a.wait(function() {
 							 waits++;
@@ -11,15 +11,16 @@ describe('qc', function() {
 					      expect(waits).toEqual(10);
 					  });
 				       it('wait is limited by a defalt wait try count of DEFAULT_WAIT', function() {
-					      var a = new qc.gen.async();
+					      var g = new qc.gen.async();
+					      var a = g.value();
 					      var tries = 0;
 					      expect(function() {
 							 a.wait(function() { tries++; return false; });
 						     }).toThrow();
-					      expect(tries).toEqual(a.DEFAULT_WAIT);
+					      expect(tries).toEqual(g.DEFAULT_WAIT);
 					  });
 				       it('triggers registered callbacks when waited on', function() {
-					      var a = new qc.gen.async();
+					      var a = new qc.gen.async().value();
 					      var triggered;
 					      a.callback(function() {
 							     triggered = true;
@@ -31,7 +32,8 @@ describe('qc', function() {
 				       
 				       describe('shrink', function(){
 						    it('removes triggered callback indexes to simplify the execution', function() {
-							   var a = new qc.gen.async();
+							   var g = new qc.gen.async();
+							   var a = g.value();
 							   var only_second;
 							   var only_first;
 
@@ -39,12 +41,13 @@ describe('qc', function() {
 							   a.callback(function() {});
 							   expect(function() { a.wait(function() {}); }).toThrow();
 
-							   _.each(a.shrink(), function(shrunk) {
+							   _.each(g.shrink(), function(shrunk) {
+								      var s = shrunk.value();
 								      var first = false;
 								      var second = false;
-								      shrunk.callback(function() { first = true; });
-								      shrunk.callback(function() { second = true; });
-								      expect(function() { shrunk.wait(function() {}); }).toThrow();
+								      s.callback(function() { first = true; });
+								      s.callback(function() { second = true; });
+								      expect(function() { s.wait(function() {}); }).toThrow();
 								      if(!first && second)
 									  only_second = true;
 								      else if(first && !second)
@@ -55,13 +58,15 @@ describe('qc', function() {
 							   expect(only_first && only_second).toEqual(true);
 						       });
 						    it('throws Skip if after executing the required callbacks the wait does not finish', function(){
-							   var a = new qc.gen.async();
+							   var g = new qc.gen.async();
+							   var a = g.value();
 							   a.callback();
 							   expect(function() { a.wait(); }).toThrow();
-							   _.each(a.shrink(), function(shrunk) {
-								      shrunk.callback();
-								      shrunk.callback();
-								      expect(function() { shrunk.wait()}).toThrow(new qc.Skip());
+							   _.each(g.shrink(), function(shrunk) {
+								      var s = shrunk.value();
+								      s.callback();
+								      s.callback();
+								      expect(function() { s.wait(); }).toThrow(new qc.Skip());
 								  });
 						    });
 						});
