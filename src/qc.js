@@ -216,6 +216,11 @@ qc = (function() {
 		},
 		property : function() {
 		    var gens = [];
+		    qc.stat._classified = {};
+		    qc.stat._require = function() {
+			return true;
+		    };
+
 		    for (var i = 0; i < arguments.length - 1; i++)
 			gens.push(arguments[i]);
 		    var prop = arguments[arguments.length - 1];
@@ -238,6 +243,24 @@ qc = (function() {
 					_.map(min.minimized, function(m) { return m.show(); }).join(', ') + 
 					' error: ' + x 
 					);
+		    }
+		    if (qc.stat._require && !qc.stat._require(qc.stat.get()))
+			throw new Error('Require failed for classification ' + JSON.stringify(qc.stat.get()));
+			
+		    if (qc.stat.out)
+			qc.stat.out(qc.stat._classified);
+		},
+		stat : {
+		    classify : function(c) {
+			if (!qc.stat._classified[c])
+			    qc.stat._classified[c] = 0;
+			qc.stat._classified[c]++;
+		    },
+		    get : function() {
+			return qc.stat._classified;
+		    },
+		    require : function(p) {
+			qc.stat._require = p;
 		    }
 		},
 		Skip : function() {},
