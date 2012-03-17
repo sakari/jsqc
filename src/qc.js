@@ -216,8 +216,9 @@ qc = (function() {
 		},
 		property : function() {
 		    var gens = [];
-		    qc.stat._classified = {};
-		    qc.stat._require = function() {
+
+		    var classifications = {};
+		    var require = function() {
 			return true;
 		    };
 
@@ -228,7 +229,22 @@ qc = (function() {
 		    try {
 			_.times(qc.TRIES, function() {
 				    try {
-					prop.apply({}, _.map(generators, function(g) { return g.value(); }));
+					var ctx = {
+					    qc : {
+						classify : function(c) {
+						    if (!classifications[c])
+							classifications[c] = 0;
+						    classifications[c]++;
+						}, 
+						classifications : function() {
+						    return classifications;
+						},
+						require : function(p) {
+						    require = p;
+						}
+					    }
+					};
+					prop.apply(ctx, _.map(generators, function(g) { return g.value(); }));
 				    } catch (x) {
 					if (x instanceof qc.Skip)
 					    return;
@@ -244,24 +260,11 @@ qc = (function() {
 					' error: ' + x 
 					);
 		    }
-		    if (qc.stat._require && !qc.stat._require(qc.stat.get()))
-			throw new Error('Require failed for classification ' + JSON.stringify(qc.stat.get()));
+		    if (!require(classifications))
+			throw new Error('Require failed for classification ' + JSON.stringify(classifications));
 			
-		    if (qc.stat.out)
-			qc.stat.out(qc.stat._classified);
-		},
-		stat : {
-		    classify : function(c) {
-			if (!qc.stat._classified[c])
-			    qc.stat._classified[c] = 0;
-			qc.stat._classified[c]++;
-		    },
-		    get : function() {
-			return qc.stat._classified;
-		    },
-		    require : function(p) {
-			qc.stat._require = p;
-		    }
+		    if (qc.out)
+			qc.out(classifications);
 		},
 		Skip : function() {},
 		TRIES : 100

@@ -3,35 +3,35 @@ describe('qc.stat', function() {
 			 beforeEach(function() {
 					var self = this;
 					this.output = [];
-					qc.stat.out = function(o) {
+					qc.out = function(o) {
 					    self.output.push(o);
 					};
 				    });
 			 afterEach(function() {
-				   delete qc.stat['out'];
+				       delete qc['out'];
 				   });
-			 it('calls qc.stat.out with classification results', function() {
+			 it('calls qc.out with classification results', function() {
 				qc.property(qc.gen.integer, function(i) {
-						qc.stat.classify("classified");
+						this.qc.classify("classified");
 					    });
 				expect(this.output).toEqual([{ "classified" : qc.TRIES }]);
 			    });
 		     });
-	     describe('get', function() {
+	     describe('classifications', function() {
 			  it('returns the current classification result inside the property', function() {
 				 var test = 0;
 				 qc.property(qc.gen.integer, function(i) {
-						 qc.stat.classify("classified");
+						 this.qc.classify("classified");
 						 test++;
-						 expect(qc.stat.get()).toEqual( { "classified" : test});
+						 expect(this.qc.classifications()).toEqual( { "classified" : test});
 					     });
 			     });
 		      });
 	     describe('require', function() {
 			  it('can be used to specify a predicate on classification', function() {
 				 qc.property(qc.gen.integer, function(i) {
-						 qc.stat.classify("classified");
-						 qc.stat.require(function(c) {
+						 this.qc.classify("classified");
+						 this.qc.require(function(c) {
 								     return c.classified > 0;
 								 });
 					     });
@@ -39,7 +39,7 @@ describe('qc.stat', function() {
 			  it('fails the test case if after the test run the predicate does not hold', function() {
 				 expect(function() {
 					    qc.property(qc.gen.integer, function(i) {
-							    qc.stat.require(function(c) {
+							    this.qc.require(function(c) {
 										return c.classified;
 									    });
 							});
