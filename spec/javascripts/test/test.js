@@ -164,6 +164,21 @@ describe('qc', function() {
 					      expect(g.shrink([]))
 						  .toEqual([]);
 					  });
+				       it('generates arrays of generated values', function() {
+					      var g = new (qc.gen.array(qc.gen.integer))();
+					      var non_empty = 0;
+					      _.times(100, function() {
+							  if (g.value().length > 0) {
+							      non_empty++;
+							      expect(_.all(g.value(), 
+									   function(e) {
+									       return _.isNumber(e);
+									   })).toEqual(true);
+							  }
+							  g = g.next();
+						      });
+					      expect(non_empty).toBeGreaterThan(0);
+					  });
 				   });
 		      });
 	     

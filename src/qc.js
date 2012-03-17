@@ -102,6 +102,7 @@ qc = (function() {
 		    },
 		    array : function(inner) {
 			return function inner_array (_opts) {
+			    _opts = _opts || {};
 			    var value = ( _opts.value === undefined ? 
 					  generate():
 					  _opts.value
@@ -120,6 +121,10 @@ qc = (function() {
 						 return new inner_array({ value: _.initial(value).concat([s])});
 					     }).concat([new inner_array({ value: _.initial(value) })]);
 			    };
+			    this.next = function() {
+				return new (qc.gen.array(inner))();
+			    };
+
 			    function generate() {
 				var n = Math.abs(new qc.gen.integer({}).value());
 				var array = [];
