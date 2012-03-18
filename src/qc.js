@@ -262,12 +262,13 @@ qc = (function() {
 		    }
 		    if (!require(classifications))
 			throw new Error('Require failed for classification ' + JSON.stringify(classifications));
-			
-		    if (qc.out)
+
+		    if(qc.out)
 			qc.out(classifications);
 		},
 		Skip : function() {},
-		TRIES : 100
-
+		TRIES : 100,
+		jasmine : {
+		}
 	    };
 })();
