@@ -5,12 +5,22 @@
 	 this._description = description;
 	 this._property = property;
 	 this._generators = generators;
-	 jasmine.Spec.call(this, env, suite);
-	 this.runs(property);
+	 this._results = new jasmine.NestedResults();
+	 this._results.description = this._description;
      };
-     jasmine.util.inherit(Property, jasmine.Spec);
      Property.prototype.execute = function(on_complete) {
-	 jasmine.Spec.prototype.execute.call(this, on_complete);
+	 var self = this;
+	 function property_wrapper(done) {
+	     var test_data = arguments;
+	     var spec = new jasmine.Spec(this._env, 
+					 this._suite, 
+					 this._description);
+	     spec.runs(function() { self._property.apply(self, test_data); });
+	     spec.execute(function() {
+			      done(spec.results().passed());
+			  });
+	 }
+	 qc.property_continuation_passing(this._generators, property_wrapper, on_complete);
      };
 
      jasmine.Env.prototype.property = function(description) {

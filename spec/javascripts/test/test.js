@@ -197,6 +197,36 @@ describe('qc', function() {
 				 expect(size).toEqual(set_size);
 			     });
 		      });
+	     describe('#property_continuation', function() {
+			  it('succeeds if all props call `done.success`', function() {
+				 var result;
+				 qc.property_continuation([], 
+							  function prop(done) {
+							      done.success();
+							  },
+							  function on_complete(r) {
+							      result = r;
+							  });
+				 waitsFor(function() { return result; });
+				 runs(function() { 
+					  expect(result.passed).toEqual(true);
+				      });
+			     });
+			  it('fails if a prop calls `done.failure`', function() {
+				 var result;
+				 qc.property_continuation([],
+							  function prop(done) {
+							      done.failure();
+							  },
+							  function on_complete(r) {
+							      result = r;
+							  });
+				 waitsFor(function() { return result; });
+				 runs(function() { 
+					  expect(result.passed).toEqual(false);
+				      });
+			     });
+		      });
 	     describe('#property', function() {
 			  it('produces test data', function() {
 				 var values = [];

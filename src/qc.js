@@ -214,6 +214,17 @@ qc = (function() {
 		    }
 		    return { minimized : last_failing, shrinks : total_shrinks };
 		},
+		property_continuation : function(generators, property, on_complete) {
+		    var done = {
+			success : function() {
+			    on_complete({ passed : true });
+			},
+			failure : function() {		
+			    on_complete({ passed : false});
+			}
+		    };
+		    property(done);
+		},
 		property : function() {
 		    var gens = [];
 
