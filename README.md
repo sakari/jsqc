@@ -1,0 +1,2 @@
+# QuickCheck for javascript
+
