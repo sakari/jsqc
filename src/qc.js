@@ -235,7 +235,7 @@ qc = (function() {
 				    return done('foobar', generators);
 				});
 		},
-		generate : function(how_many, generator_constructors, callback, done) {
+		generate : function(how_many, generator_constructors, predicate, done) {
 		    var count = 0;
 		    var generators = _.map(generator_constructors, function(c) {
 					        return new c({});
@@ -245,7 +245,11 @@ qc = (function() {
 				},
 				function(cb) {
 				    generators = _.map(generators, function(g) { return g.next(); });
-				    callback.apply({}, cb, _.map(generators, function(g) { return g.value(); }));
+				    predicate.call({}, cb, _.map(generators, 
+								 function(g) { 
+								     return g.value(); 
+								 }
+								));
 				},
 				function(e) {
 				    done(e, generators);

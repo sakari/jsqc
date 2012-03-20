@@ -196,13 +196,8 @@ describe('qc', function() {
 			  it('can be called with empty generator list', function() {
 				 var result;
 				 qc.generate(how_many, [], 
-					     function(cb) {
-						 cb();
-					     },
-					     function(e) {
-						 result = e;
-						 done = true;
-					     }
+					     function(cb) { cb(); },
+					     function() { done = true; }
 					    );
 				 waitsFor(function(){ return done;});
 			     });
@@ -248,8 +243,8 @@ describe('qc', function() {
 				 var value;
 				 var gen;
 				 qc.generate(how_many, [qc.gen.integer], 
-					     function(cb, i) {
-						 value = i;
+					     function(cb, test_data) {
+						 value = test_data;
 						 cb("error");
 					     },
 					     function(e, g) {
@@ -260,7 +255,7 @@ describe('qc', function() {
 					  });
 				 runs(function() {
 					  expect(_.map(gen, function(g) { return g.value(); }))
-					      .toEqual([value]);
+					      .toEqual(value);
 				      });
 			     });
 		      });
