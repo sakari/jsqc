@@ -240,19 +240,35 @@ qc = (function() {
 		    var generators = _.map(generator_constructors, function(c) {
 					        return new c({});
 					   });
+		    var classification = {};
+		    var require = function() {
+			return true;
+		    };
+		    var ctx = {
+			classify : function(name) { 
+			    if(!classification[name])
+				classification[name] = 0;
+			    classification[name]++;
+			},
+			require : function(p) { require = p; }
+		    };
 		    async.until(function() {
 				    return count++ >= how_many;
 				},
 				function(cb) {
 				    generators = _.map(generators, function(g) { return g.next(); });
-				    predicate.call({}, cb, _.map(generators, 
+				    predicate.call(ctx, cb, _.map(generators, 
 								 function(g) { 
 								     return g.value(); 
 								 }
 								));
 				},
 				function(e) {
-				    done(e, generators);
+				    if(e) return done(e, generators);
+				    if(!require(classification)) 
+					return done(new Error('Classification does not match requirement: ' + 
+							      JSON.stringify(classification)));
+				    return done(null);
 				}
 			       );
 		},

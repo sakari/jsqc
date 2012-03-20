@@ -193,13 +193,18 @@ describe('qc', function() {
 					 done = false;
 					 how_many = 100;
 				     });
+			  function afterDone(fn) {
+			      waitsFor(function() { return done; });
+			      if(fn)
+				  runs(fn);
+			  };
 			  it('can be called with empty generator list', function() {
 				 var result;
 				 qc.generate(how_many, [], 
 					     function(cb) { cb(); },
 					     function() { done = true; }
 					    );
-				 waitsFor(function(){ return done;});
+				 afterDone();
 			     });
 			  it('produces random values', function() {
 				 var values = [];
@@ -211,14 +216,12 @@ describe('qc', function() {
 					     function(e, g) {
 						 done = true;
 					     });
-				 waitsFor(function() {
-					      return done;
-					  });
-				 runs(function() {
-					  expect(values.length).toEqual(how_many);
-					  expect(_.all(values, function(v) { return _.isNumber(v); }));
-				      });
+				 afterDone(function() {
+					       expect(values.length).toEqual(how_many);
+					       expect(_.all(values, function(v) { return _.isNumber(v); }));
+					   });
 			     });
+
 			  it('stops short if callback is called with a value', function() {
 				 var tries = 0;
 				 var result;
@@ -229,15 +232,13 @@ describe('qc', function() {
 						 return cb();
 					     },
 					     function(e) {
-						 result = e;	 
+						 result = e;
+						 done = true;
 					     });
-				 waitsFor(function() {
-					  return result;
-					  });
-				 runs(function() {
-					  expect(tries).toBeLessThan(how_many);
-					  expect(result).toEqual("stopped");
-				      });
+				 afterDone(function() {
+					       expect(tries).toBeLessThan(how_many);
+					       expect(result).toEqual("stopped");
+					   });
 			     });
 			  it('passes the current generator as the second argument to on_complete when stopping', function() {
 				 var value;
@@ -248,16 +249,70 @@ describe('qc', function() {
 						 cb("error");
 					     },
 					     function(e, g) {
-						 gen = g;	 
+						 gen = g;
+						 done = true;
 					     });
-				 waitsFor(function() {
-					     return gen; 
-					  });
-				 runs(function() {
-					  expect(_.map(gen, function(g) { return g.value(); }))
-					      .toEqual(value);
-				      });
+				 afterDone(function() {
+					       expect(_.map(gen, function(g) { return g.value(); }))
+						   .toEqual(value);
+					   });
 			     });
+
+			  describe('generator predicate classification', function()  {
+				       describe('classify', function() {
+						    it('is provided by the ctx', function() {
+							   qc.generate(how_many, [qc.gen.integer],
+								       function(cb, value) {
+									   this.classify('classified');
+									   return cb();
+								       },
+								       function(e) {
+									   done = true;
+								       });
+							   afterDone();
+						       });
+						});
+				       describe('require', function() {
+						    it('classifications can be asserted on with require', function() {
+							   var exception;
+							   qc.generate(how_many, [qc.gen.integer], 
+								       function(cb, value) {
+									   this.classify('classification');
+									   this.require(function(cl) {
+											    return cl.classification > 1;
+											});
+									   return cb();
+								       },
+								       function(e) {
+									   exception = e;
+									   done = true;
+								       });
+							   afterDone(
+							       function() {
+								   expect(exception).toEqual(null);
+							       });
+						       });
+						    it('fails the predicate if the assertion does not hold in the end', function() {
+							   var exception;
+							   var tries = 0;
+							   qc.generate(how_many, [qc.gen.integer], 
+								       function(cb, value) {
+									   tries++;
+									   this.require(function(cl) { return false; });
+									   return cb();
+								       },
+								       function(e) {
+									   exception = e;
+									   done = true;
+								       });
+							   afterDone(function() {
+									 expect(tries).toEqual(how_many);
+									 expect(exception).toBeDefined(); 
+								     });
+						       });
+						});
+				   });
+
 		      });
 	     describe('minimize', function() {
 			  function gen(value) {
