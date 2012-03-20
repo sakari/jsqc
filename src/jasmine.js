@@ -20,7 +20,7 @@
 			      done(spec.results().passed());
 			  });
 	 }
-	 qc.property_continuation_passing(this._generators, property_wrapper, on_complete);
+	 qc.property(this._generators, property_wrapper, on_complete);
      };
 
      jasmine.Env.prototype.property = function(description) {

@@ -182,100 +182,75 @@ qc = (function() {
 		    }
 		    return result;
 		},
-		_minimize_at_position : function(position, generators, prop) {
+		_minimize_at_position : function(position, generators, predicate, done) {
 		    generators = generators.slice();
 		    var candidates = generators[position].shrink();
-		    var shrinks = 0;
-		    for( var i in candidates ) {
-			console.log(candidates[i].show());
-			try {
-			    var value = _.map(generators, function(g) { return g.value(); });
-			    value[position] = candidates[i].value();
-			    prop.apply({}, value);
-			} catch (x) {
-			    if (x instanceof qc.Skip)
-				continue;
-			    shrinks++;
+		    if (candidates.length === 0)
+			return done();
+		    generators[position] = candidates.pop();
 
-			    generators[position] = candidates[i];
-			    candidates = generators[position].shrink();
-			}
-		    }
-		    return { minimized : generators, shrinks : shrinks };
-		},
-		_minimize : function(last_failing, prop) {
-		    var data;
-		    var total_shrinks = 0;
-		    console.log('shrinking..');
-		    for (var shrink_position in last_failing) {
-			data = this._minimize_at_position(shrink_position, last_failing, prop);
-			total_shrinks += data.shrinks;
-			last_failing = data.minimized;
-		    }
-		    return { minimized : last_failing, shrinks : total_shrinks };
-		},
-		property_continuation : function(generators, property, on_complete) {
-		    var done = {
+		    var predicate_done = {
 			success : function() {
-			    on_complete({ passed : true });
+			    return qc._minimize_at_position(position, generators, predicate, done);
 			},
-			failure : function() {		
-			    on_complete({ passed : false});
+			failure : function() {
+			    return done('failed', generators);
 			}
 		    };
-		    property(done);
-		},
-		property : function() {
-		    var gens = [];
-
-		    var classifications = {};
-		    var require = function() {
-			return true;
+		    var ctx = {
+			classify : function() {},
+			require : function() {},
+			classifications : function() {}
 		    };
-
-		    for (var i = 0; i < arguments.length - 1; i++)
-			gens.push(arguments[i]);
-		    var prop = arguments[arguments.length - 1];
-		    var generators = _.map(gens, function(g) { return new g({}); });
 		    try {
-			_.times(qc.TRIES, function() {
-				    try {
-					var ctx = {
-					    qc : {
-						classify : function(c) {
-						    if (!classifications[c])
-							classifications[c] = 0;
-						    classifications[c]++;
-						}, 
-						classifications : function() {
-						    return classifications;
-						},
-						require : function(p) {
-						    require = p;
-						}
-					    }
-					};
-					prop.apply(ctx, _.map(generators, function(g) { return g.value(); }));
-				    } catch (x) {
-					if (x instanceof qc.Skip)
-					    return;
-					throw x;
-				    }
-				    generators = _.map(generators, function(g) { return g.next(); });
-				});
+			return predicate(ctx, predicate_done, _.map(generators, function(g) { return g.value(); }));
 		    } catch (x) {
-			var min = this._minimize(generators, prop);
-			throw new Error('Failing case after ' +
-					min.shrinks + ' shrinks ' +
-					_.map(min.minimized, function(m) { return m.show(); }).join(', ') + 
-					' error: ' + x 
-					);
+			if (x instanceof qc.Skip)
+			    return predicate_done.success();
+			return predicate_done.failure();
 		    }
-		    if (!require(classifications))
-			throw new Error('Require failed for classification ' + JSON.stringify(classifications));
 
-		    if(qc.out)
-			qc.out(classifications);
+		},
+		minimize : function(generators, predicate, done) {
+		    var shrink_position = generators.length - 1;
+		    async.until(function() {
+				    return shrink_position < 0;
+				},
+				function(cb) {
+				    return qc._minimize_at_position(shrink_position--, 
+								    generators, 
+								    predicate, 
+								    function(e, gs) {
+									if (e) {
+									    generators = gs;
+									}
+									return cb(e);
+								    });
+				},
+				function(e) {
+				    if(e) {
+					return qc.minimize(generators, predicate, done);
+				    }
+				    console.log(generators);
+				    return done('foobar', generators);
+				});
+		},
+		generate : function(how_many, generator_constructors, callback, done) {
+		    var count = 0;
+		    var generators = _.map(generator_constructors, function(c) {
+					        return new c({});
+					   });
+		    async.until(function() {
+				    return count++ >= how_many;
+				},
+				function(cb) {
+				    generators = _.map(generators, function(g) { return g.next(); });
+				    callback.apply({}, cb, _.map(generators, function(g) { return g.value(); }));
+				},
+				function(e) {
+				    done(e, generators);
+				}
+			       );
 		},
 		Skip : function() {},
 		TRIES : 100,

@@ -186,6 +186,138 @@ describe('qc', function() {
 					  });
 				   });
 		      });
+	     describe('generate', function() {
+			  var done;
+			  var how_many;
+			  beforeEach(function() {
+					 done = false;
+					 how_many = 100;
+				     });
+			  it('can be called with empty generator list', function() {
+				 var result;
+				 qc.generate(how_many, [], 
+					     function(cb) {
+						 cb();
+					     },
+					     function(e) {
+						 result = e;
+						 done = true;
+					     }
+					    );
+				 waitsFor(function(){ return done;});
+			     });
+			  it('produces random values', function() {
+				 var values = [];
+				 qc.generate(how_many, [qc.gen.integer], 
+					     function(cb, i) {
+						 values.push(i);
+						 cb();
+					     },
+					     function(e, g) {
+						 done = true;
+					     });
+				 waitsFor(function() {
+					      return done;
+					  });
+				 runs(function() {
+					  expect(values.length).toEqual(how_many);
+					  expect(_.all(values, function(v) { return _.isNumber(v); }));
+				      });
+			     });
+			  it('stops short if callback is called with a value', function() {
+				 var tries = 0;
+				 var result;
+				 qc.generate(how_many, [qc.gen.integer],
+					     function(cb, i) {
+						 if (tries++ > how_many / 2)
+						     return cb("stopped");
+						 return cb();
+					     },
+					     function(e) {
+						 result = e;	 
+					     });
+				 waitsFor(function() {
+					  return result;
+					  });
+				 runs(function() {
+					  expect(tries).toBeLessThan(how_many);
+					  expect(result).toEqual("stopped");
+				      });
+			     });
+			  it('passes the current generator as the second argument to on_complete when stopping', function() {
+				 var value;
+				 var gen;
+				 qc.generate(how_many, [qc.gen.integer], 
+					     function(cb, i) {
+						 value = i;
+						 cb("error");
+					     },
+					     function(e, g) {
+						 gen = g;	 
+					     });
+				 waitsFor(function() {
+					     return gen; 
+					  });
+				 runs(function() {
+					  expect(_.map(gen, function(g) { return g.value(); }))
+					      .toEqual([value]);
+				      });
+			     });
+		      });
+	     describe('minimize', function() {
+			  function gen(value) {
+			      this.shrink = function() {
+				  if(value === 0)
+				      return [];
+				  return [new gen(value - 1)];
+			      };
+			      this.value = function() {
+				  return value;
+			      };
+			      this.show = function() {};
+			  };
+			  it('stops when it cannot minimize further', function() {
+				 var g = new (function() {
+						  this.shrink = function() {
+						      return [];
+						  };
+						  this.show = function() {
+						      return '';
+						  };
+					      })();
+				 var minimized_g; 
+				 qc.minimize([g],
+					     function(ctx, cb, v) {
+						 cb();
+					     },
+					     function(e, g) {
+						 minimized_g = g;
+					     });
+				 waitsFor(function() { return minimized_g; });
+				 runs(function() {
+					  expect(minimized_g.length)
+					      .toEqual(1);
+					  expect(minimized_g[0])
+					      .toBe(g);
+				      });
+			     });
+			  it('calls predicate with the shrunk value', function() {
+				 var g = new gen(3);
+				 var got = [];
+				 qc.minimize([g], 
+					     function(ctx, cb, v) {
+						 got.push(v);
+						 cb();
+					     },
+					     function() {});
+				 waitsFor(function() {
+					      return got.length >= 2;
+					  });
+				 runs(function() {
+					  expect(got).toEqual([[2], [1], [0]]);
+				      });
+			     });
+		      });
 	     
 	     describe('resize', function() {
 			  it('sets the global size for the execution of the function', function() {
@@ -195,155 +327,6 @@ describe('qc', function() {
 						 size = qc.size();
 					     });
 				 expect(size).toEqual(set_size);
-			     });
-		      });
-	     describe('#property_continuation', function() {
-			  it('succeeds if all props call `done.success`', function() {
-				 var result;
-				 qc.property_continuation([], 
-							  function prop(done) {
-							      done.success();
-							  },
-							  function on_complete(r) {
-							      result = r;
-							  });
-				 waitsFor(function() { return result; });
-				 runs(function() { 
-					  expect(result.passed).toEqual(true);
-				      });
-			     });
-			  it('fails if a prop calls `done.failure`', function() {
-				 var result;
-				 qc.property_continuation([],
-							  function prop(done) {
-							      done.failure();
-							  },
-							  function on_complete(r) {
-							      result = r;
-							  });
-				 waitsFor(function() { return result; });
-				 runs(function() { 
-					  expect(result.passed).toEqual(false);
-				      });
-			     });
-		      });
-	     describe('#property', function() {
-			  it('produces test data', function() {
-				 var values = [];
-				 qc.property(qc.gen.integer,
-					       function(integer) {
-						   values.push(integer);
-					       });
-				 expect(values.length)
-				     .toBeGreaterThan(0);
-			     });
-			  it('can be passed multiple generators', function() {
-				 var values;
-				 qc.property(qc.gen.const('first'), 
-					     qc.gen.const('second'), 
-					     function(fst, snd) {
-						 values = [fst, snd];
-					     });
-				 expect(values).toEqual(['first', 'second']);
-			     });
-			  it('produces qc.TRIES test cases', function() {
-				 var tries = 0;
-				 qc.property(qc.gen.integer, function() { tries++; });
-				 expect(tries).toEqual(qc.TRIES);
-			     });
-
-			  it('produces different test values', function() {
-				 var tries = 0;
-				 var seen = [];
-				 qc.property(qc.gen.integer, function(value) {  
-						   if (value in seen)
-						       return;
-						   seen.push(value);
-					       });
-				 expect(seen.length).toBeGreaterThan(qc.TRIES / 10);
-			     });
-
-			  it('throws when fails', function() {
-				 expect(function() {
-					    qc.property(qc.gen.integer, 
-							  function(){
-							      throw new Error();
-							  });
-					}).toThrow();
-			     });
-			  it('calls generator to produce test data', function() {
-				 function gen() {
-				     var value = "value";
-				     this.copy = function(){
-					 return value;
-				     };
-				     this.next = function() {
-					 return this;
-				     };
-				     this.value = function() {
-					 return value;
-				     };
-				 };
-				 qc.property(gen, function(value) {
-						   expect(value)
-						       .toEqual("value");
-					       });
-			     });
-			  it('calls shrink to shrink failing test data', function() {
-				 function gen(_opts) {
-				     var value = _opts.value || 2;
-				     this.value = function() {
-					 return value;
-				     };
-				     this.show = function() {
-					return value.toString(); 
-				     };
-				     this.shrink = function() {
-					 return [new gen({ value : value - 1})];
-				     };
-				 }
-				 var succeedingValue;
-				 expect(function() {
-					    qc.property(gen, function(value) {
-							      if(value > 1)
-								  throw new Error();
-							      succeedingValue = value;
-							  });})
-				     .toThrow();
-				 expect(succeedingValue).toEqual(1);
-			     });
-			  it('skips the test case if it throws qc.Skip', function() {
-				 qc.property(qc.gen.integer, function() {
-						   throw new qc.Skip();
-					       });
-			     });
-			  it('minimization skips tests that throw qc.Skip', function() {
-				 function gen (opts) {
-				     this.value = function() {
-					 return opts.value || "fail";
-				     };
-				     this.show = function() {
-					  return this.value();
-				     };
-				     this.shrink = function() {
-					 if (this.value() === "fail") {
-					     return [new gen({value: "skip shrunk"})];
-					 }
-					 if (this.value() === "skip shrunk") {
-					     throw new Error('this value should not be tried to shrink as it is skipped');
-					 }
-					 return [];
-				     };
-				 };
-				 expect(function() {
-					    qc.property(gen, function(value) {
-							      if (value === "fail")
-								  throw new Error();
-							      if (value === "skip shrunk")
-								  throw new qc.Skip();
-							      throw new Error('unknown input ' + value);
-							  });
-					}).toThrow(new Error("Failing case after 0 shrinks fail error: Error"));
 			     });
 		      });
 	 });
