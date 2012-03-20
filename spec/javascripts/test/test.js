@@ -5,6 +5,14 @@ describe('qc', function() {
 			    done = false;
 			    how_many = 100;
 			});
+	     function doneFunc(fn) {
+		 return function(e, gs) {
+		     done = true;
+		     if (fn)
+			 fn(e, gs);
+		 };
+	     };
+
 	     function afterDone(fn) {
 		 waitsFor(function() { return done; });
 		 if(fn)
@@ -203,7 +211,7 @@ describe('qc', function() {
 				 var result;
 				 qc.generate(how_many, [], 
 					     function(cb) { cb(); },
-					     function() { done = true; }
+					     doneFunc()
 					    );
 				 afterDone();
 			     });
@@ -214,9 +222,7 @@ describe('qc', function() {
 						 values.push(i);
 						 cb();
 					     },
-					     function(e, g) {
-						 done = true;
-					     });
+					     doneFunc());
 				 afterDone(function() {
 					       expect(values.length).toEqual(how_many);
 					       expect(_.all(values, function(v) { return _.isNumber(v); }));
@@ -232,10 +238,10 @@ describe('qc', function() {
 						     return cb("stopped");
 						 return cb();
 					     },
-					     function(e) {
-						 result = e;
-						 done = true;
-					     });
+					     doneFunc(function(e) {
+							  result = e;
+						      })
+					    );
 				 afterDone(function() {
 					       expect(tries).toBeLessThan(how_many);
 					       expect(result).toEqual("stopped");
@@ -249,10 +255,10 @@ describe('qc', function() {
 						 value = test_data;
 						 cb("error");
 					     },
-					     function(e, g) {
-						 gen = g;
-						 done = true;
-					     });
+					     doneFunc(function(e, g) {
+							  gen = g;
+						      })
+					    );
 				 afterDone(function() {
 					       expect(_.map(gen, function(g) { return g.value(); }))
 						   .toEqual(value);
@@ -267,9 +273,7 @@ describe('qc', function() {
 									   this.classify('classified');
 									   return cb();
 								       },
-								       function(e) {
-									   done = true;
-								       });
+								       doneFunc());
 							   afterDone();
 						       });
 						});
@@ -284,10 +288,10 @@ describe('qc', function() {
 											});
 									   return cb();
 								       },
-								       function(e) {
-									   exception = e;
-									   done = true;
-								       });
+								       doneFunc(function(e) {
+										    exception = e;
+										})
+								      );
 							   afterDone(
 							       function() {
 								   expect(exception).toEqual(null);
@@ -302,10 +306,10 @@ describe('qc', function() {
 									   this.require(function(cl) { return false; });
 									   return cb();
 								       },
-								       function(e) {
-									   exception = e;
-									   done = true;
-								       });
+								       doneFunc(function(e) {
+										    exception = e;
+										})
+								      );
 							   afterDone(function() {
 									 expect(tries).toEqual(how_many);
 									 expect(exception).toBeDefined(); 
@@ -361,10 +365,9 @@ describe('qc', function() {
 						 }
 						 return cb();
 					     },
-					     function(e, gs) {
+					     doneFunc(function(e, gs) {
 						 generators = gs;
-						 done = true;
-					     }
+					     })
 					    );
 				 afterDone(function() {
 					       expect(_.map(generators, function(g) { return g.value(); }))
@@ -375,11 +378,11 @@ describe('qc', function() {
 				 var exception;
 				 var tries = 0;
 				 qc.minimize([new qc.gen.integer()],
-					    function(cb, value) { cb(new Error(tries)); },
-					    function(e) {
-						exception = e;
-						done = true;
-					    });
+					     function(cb, value) { cb(new Error(tries)); },
+					     doneFunc(function(e) {
+							  exception = e;
+						      })
+					    );
 				 afterDone(function() {
 					       expect(exception).toEqual(new Error(tries));
 					   });
@@ -389,10 +392,9 @@ describe('qc', function() {
 				 var exception;
 				 qc.minimize([new qc.gen.integer()],
 					    function(cb, value) { cb(); },
-					    function(e) {
-						exception = e;
-						done = true;
-					    });
+					    doneFunc(function(e) {
+							 exception = e;
+					    }));
 				 afterDone(function() {
 					       expect(exception).toEqual(null);
 					   });
@@ -423,27 +425,24 @@ describe('qc', function() {
 							      this.classify('classified');
 							      cb();
 							  },
-							  function() {
-							      done = true;
-							  }
+							  doneFunc()
 							 );
-					      waitsFor(function() { return done; });
+					      afterDone();
 					  });
 				       it('provides require, but it does not fail', function() {
 					      var exception;
 					      qc.minimize([new qc.gen.integer()],
-							 function(cb, v) {
-							     this.require(function() {return false;});
-							     cb();
-							 },
-							 function(e) {
-							     exception = e;
-							     done = true;
-							 });
-					      waitsFor(function() { return done; });
-					      runs(function() {
-						       expect(exception).toBeFalsy();
-						   });
+							  function(cb, v) {
+							      this.require(function() {return false;});
+							      cb();
+							  },
+							  doneFunc(function(e) {
+								      exception = e;
+								   })
+							 );
+					      afterDone(function() {
+							    expect(exception).toBeFalsy();
+							});
 					  });
 				   });
 		      });
