@@ -1,4 +1,16 @@
 describe('qc', function() {
+	     var done;
+	     var how_many;
+	     beforeEach(function() {
+			    done = false;
+			    how_many = 100;
+			});
+	     function afterDone(fn) {
+		 waitsFor(function() { return done; });
+		 if(fn)
+		     runs(fn);
+	     };
+
 	     describe('gen', function(){
 			  describe('async', function(){
 				       it('can be waited on until a given predicate holds', function() {
@@ -187,17 +199,6 @@ describe('qc', function() {
 				   });
 		      });
 	     describe('generate', function() {
-			  var done;
-			  var how_many;
-			  beforeEach(function() {
-					 done = false;
-					 how_many = 100;
-				     });
-			  function afterDone(fn) {
-			      waitsFor(function() { return done; });
-			      if(fn)
-				  runs(fn);
-			  };
 			  it('can be called with empty generator list', function() {
 				 var result;
 				 qc.generate(how_many, [], 
@@ -337,7 +338,7 @@ describe('qc', function() {
 					      })();
 				 var minimized_g; 
 				 qc.minimize([g],
-					     function(ctx, cb, v) {
+					     function(cb, v) {
 						 cb();
 					     },
 					     function(e, g) {
@@ -351,11 +352,39 @@ describe('qc', function() {
 					      .toBe(g);
 				      });
 			     });
+			  
+			  it('passes the latest exception when shrinking', function() {
+				 var exception;
+				 var tries = 0;
+				 qc.minimize([new qc.gen.integer()],
+					    function(cb, value) { cb(new Error(tries)); },
+					    function(e) {
+						exception = e;
+						done = true;
+					    });
+				 afterDone(function() {
+					       expect(exception).toEqual(new Error(tries));
+					   });
+			     });
+			  
+			  it('passes `null` as exception if no errors are found', function() {
+				 var exception;
+				 qc.minimize([new qc.gen.integer()],
+					    function(cb, value) { cb(); },
+					    function(e) {
+						exception = e;
+						done = true;
+					    });
+				 afterDone(function() {
+					       expect(exception).toEqual(null);
+					   });
+				 
+			     });
 			  it('calls predicate with the shrunk value', function() {
 				 var g = new gen(3);
 				 var got = [];
 				 qc.minimize([g], 
-					     function(ctx, cb, v) {
+					     function(cb, v) {
 						 got.push(v);
 						 cb();
 					     },
@@ -367,6 +396,38 @@ describe('qc', function() {
 					  expect(got).toEqual([[2], [1], [0]]);
 				      });
 			     });
+			  describe('context when minimizing', function() {
+				       var done;
+				       beforeEach(function() { done = false; });
+				       it('provides classify', function() {
+					      qc.minimize([new qc.gen.integer()],
+							  function(cb, v) {
+							      this.classify('classified');
+							      cb();
+							  },
+							  function() {
+							      done = true;
+							  }
+							 );
+					      waitsFor(function() { return done; });
+					  });
+				       it('provides require, but it does not fail', function() {
+					      var exception;
+					      qc.minimize([new qc.gen.integer()],
+							 function(cb, v) {
+							     this.require(function() {return false;});
+							     cb();
+							 },
+							 function(e) {
+							     exception = e;
+							     done = true;
+							 });
+					      waitsFor(function() { return done; });
+					      runs(function() {
+						       expect(exception).toBeFalsy();
+						   });
+					  });
+				   });
 		      });
 	     
 	     describe('resize', function() {

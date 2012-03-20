@@ -138,6 +138,7 @@ qc = (function() {
 			};
 		    },
 		    integer : function(_opts) {
+			_opts = _opts || {};
 			var value = (_opts.value === undefined ? 
 				     generate() :
 				     _opts.value);
@@ -189,13 +190,9 @@ qc = (function() {
 			return done();
 		    generators[position] = candidates.pop();
 
-		    var predicate_done = {
-			success : function() {
-			    return qc._minimize_at_position(position, generators, predicate, done);
-			},
-			failure : function() {
-			    return done('failed', generators);
-			}
+		    var predicate_done = function(e) {
+			if(e) return done(e, generators);
+			return qc._minimize_at_position(position, generators, predicate, done);
 		    };
 		    var ctx = {
 			classify : function() {},
@@ -203,11 +200,11 @@ qc = (function() {
 			classifications : function() {}
 		    };
 		    try {
-			return predicate(ctx, predicate_done, _.map(generators, function(g) { return g.value(); }));
+			return predicate.call(ctx, predicate_done, _.map(generators, function(g) { return g.value(); }));
 		    } catch (x) {
 			if (x instanceof qc.Skip)
 			    return predicate_done.success();
-			return predicate_done.failure();
+			return predicate_done(x);
 		    }
 
 		},
@@ -229,10 +226,13 @@ qc = (function() {
 				},
 				function(e) {
 				    if(e) {
-					return qc.minimize(generators, predicate, done);
+					return qc.minimize(generators, predicate, 
+							   function(new_e, generators) {
+							       return done(new_e || e, generators);
+							   });
 				    }
 				    console.log(generators);
-				    return done('foobar', generators);
+				    return done(null, generators);
 				});
 		},
 		generate : function(how_many, generator_constructors, predicate, done) {
