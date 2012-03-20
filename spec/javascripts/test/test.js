@@ -352,7 +352,25 @@ describe('qc', function() {
 					      .toBe(g);
 				      });
 			     });
-			  
+			  it('passes the generator responsible for the latest exception', function() {
+				 var generators;
+				 qc.minimize([new qc.gen.integer({ value : 10})],
+					     function(cb, vs) {
+						 if(vs[0] > 4) {
+						     return cb(new Error('error'));
+						 }
+						 return cb();
+					     },
+					     function(e, gs) {
+						 generators = gs;
+						 done = true;
+					     }
+					    );
+				 afterDone(function() {
+					       expect(_.map(generators, function(g) { return g.value(); }))
+						   .toEqual([5]);
+					   });
+			     });
 			  it('passes the latest exception when shrinking', function() {
 				 var exception;
 				 var tries = 0;
