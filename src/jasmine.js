@@ -5,22 +5,47 @@
 	 this._description = description;
 	 this._property = property;
 	 this._generators = generators;
-	 this._results = new jasmine.NestedResults();
-	 this._results.description = this._description;
+     };
+     Property.prototype.results = function() {
+	 return this._results;
      };
      Property.prototype.execute = function(on_complete) {
 	 var self = this;
-	 function property_wrapper(done) {
-	     var test_data = arguments;
-	     var spec = new jasmine.Spec(this._env, 
-					 this._suite, 
-					 this._description);
-	     spec.runs(function() { self._property.apply(self, test_data); });
+	 var latest_failed_result;
+	 var latest_result;
+	 function property_wrapper(cb, test_data) {
+	     var spec = new jasmine.Spec(self._env, 
+					 self._suite, 
+					 self._description);
+	     var spec_done;
+	     spec.runs(function() { 
+			   self._property.apply(spec, test_data); 
+			   spec_done = true;
+		       });
+	     spec.waitsFor(function(){
+			       return spec_done;
+			   });
 	     spec.execute(function() {
-			      done(spec.results().passed());
+			      latest_result = spec.results();
+			      if (!latest_result.passed()) {
+				  latest_failed_result = latest_result;
+				  return cb(new Error('test failed'));
+			      }
+			      return cb();
 			  });
 	 }
-	 qc.property(this._generators, property_wrapper, on_complete);
+	 qc.generate(100, 
+		     this._generators, 
+		     property_wrapper, 
+		     function(e, gs) {
+			 if (e) {
+			     self._results = latest_failed_result;
+			 } else {
+			     self._results = latest_result;
+			     
+			 }
+			 on_complete();
+		     });
      };
 
      jasmine.Env.prototype.property = function(description) {

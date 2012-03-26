@@ -7,29 +7,23 @@ describe('qc.jasmine', function() {
 			  it('is provided by jasmine', function(i) {
 				 var spec; 
 				 var suite = env.describe('suite', function() {
-							      env.it('spec that holds', 
-								     function(i) {
-									 this.expect(true).toEqual(true);
-									 console.log('ok');
-								     });
-							      env.it('spec that does not hold', function(i) {
-									 console.log('nok');
-									 this.expect(false).toEqual(true);
-								     });
 							      env.property('property that holds', qc.gen.integer, 
 									   function(i) {
-									       console.log('prop');
 									       this.expect(_.isNumber(i)).toEqual(true);
 									   });
+							      env.property('propert that fails with some value', qc.gen.integer,
+									  function(i) {
+									      this.expect(i).toBeLessThan(5);
+									  });
 							  });
 				 var ready;
 				 suite.execute(function() { ready = true; });
 				 waitsFor(function() { return ready; });
 				 runs(function() {
 					  console.log(suite.results());
-					  // expect(suite.results().totalCount).toEqual(3);
-					  // expect(suite.results().passedCount).toEqual(2);
-					  // expect(suite.results().failedCount).toEqual(1);
+					  expect(suite.results().totalCount).toEqual(2);
+					  expect(suite.results().passedCount).toEqual(1);
+					  expect(suite.results().failedCount).toEqual(1);
 				      });
 			     });
 		      });
