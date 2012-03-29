@@ -60,5 +60,33 @@ describe('qc.jasmine', function() {
 							     expect(suite.results().totalCount).toEqual(3);
 							 });
 			     });
+			  describe('classify', function() {
+				       it('logs the classification results', function() {
+					      var prop;
+					      given_suite_with(function(env) {
+								   prop = env.property('prop', qc.gen.integer,
+										function(i) {
+										    this.classify('classified');
+										});
+							       });
+					      when_suite_has_been_run(function(suite) {
+									  expect(prop.results().getItems()[0]['values'])
+									      .toEqual({ 'classified': 100});
+								      });
+					  });
+				       it('returns the collected classifications if called without argumets', function() {
+					      var cls;
+					      given_suite_with(function(env) {
+								   env.property('prop', qc.gen.integer,
+										function() {
+										    this.classify('tag');
+										    cls = this.classify();
+										});
+							       });
+					      when_suite_has_been_run(function(suite) {
+									  expect(cls).toEqual({ 'tag': 100 });
+								      });
+					  });
+				   });
 		      });
 	 });
