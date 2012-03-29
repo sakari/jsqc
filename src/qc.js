@@ -227,8 +227,10 @@ qc = (function() {
 				function(e) {
 				    if(e) {
 					return qc.minimize(generators, predicate, 
-							   function(new_e, generators) {
-							       return done(new_e || e, generators);
+							   function(new_e, new_generators) {
+							       if (new_e)
+								   return done(new_e, new_generators);
+							       return done(e, generators);
 							   });
 				    }
 				    console.log(generators);

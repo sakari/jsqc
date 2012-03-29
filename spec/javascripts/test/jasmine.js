@@ -60,6 +60,91 @@ describe('qc.jasmine', function() {
 							     expect(suite.results().totalCount).toEqual(3);
 							 });
 			     });
+			  it('executes beforeEachs before running each test', function() {
+				 var trip;
+				 given_suite_with(function(env) {
+						      env.beforeEach(function() {
+									 trip = true;
+								     });
+						      env.property('prop', qc.gen.integer,
+								  function(i) {
+								      this.expect(trip).toBeTruthy();
+								      trip = false;
+								  });
+						  });
+				 when_suite_has_been_run(function(suite) {
+							     expect(trip).toBeFalsy();
+							 });
+			     });
+			  it('executes afterEachs before running each test', function() {
+				 var trip = true;
+				 given_suite_with(function(env) {
+						      env.afterEach(function() {
+									 trip = true;
+								     });
+						      env.property('prop', qc.gen.integer,
+								  function(i) {
+								      this.expect(trip).toBeTruthy();
+								      trip = false;
+								  });
+						  });
+				 when_suite_has_been_run(function() {
+							     expect(trip).toBeTruthy();
+							 });
+			     });
+			  it('runs property many times', function() {
+				 var tries = 0;
+				 given_suite_with(function(env) {
+						      env.property('prop', qc.gen.integer,
+								  function(i) {
+								      tries++;			      
+								  });
+						  });
+				 when_suite_has_been_run(function() {
+							     expect(tries).toBeGreaterThan(1);
+							 });
+			     });
+			  it('fails if some tests fail', function() {
+				 given_suite_with(function(env) {
+						      env.property('prop', qc.gen.integer,
+								  function(i) {
+								      this.expect(i).toBeLessThan(10);
+								  });
+						  });
+				 when_suite_has_been_run(function(suite) {
+							     expect(suite.results().failedCount).toEqual(1);
+							 });
+			     });
+			  it('shrinks to the minimal failing value', function() {
+				 given_suite_with(function(env) {
+						      env.property('prop', qc.gen.integer,
+								   function(i) {
+								       this.expect(i).toBeLessThan(10);
+								   });
+						  });
+				 when_suite_has_been_run(function(suite) {
+							     expect(suite.results().getItems()[0].getItems()[1].values)
+								 .toEqual(['10']);
+							 });
+			     });
+
+			  it('logs the last failing value', function() {
+				 var last_failing_value;
+				 given_suite_with(function(env) {
+						      env.property('prop', qc.gen.integer,
+								  function(i) {
+								      if (i >= 10)
+									  last_failing_value = i;
+								      this.expect(i).toBeLessThan(10);
+								  });
+						  });
+				 when_suite_has_been_run(function(suite) {
+							     expect(suite.results().getItems()[0].getItems()[1].values)
+								 .toEqual([last_failing_value + '']);
+							 });
+			     });
+
+
 			  describe('classify', function() {
 				       it('logs the classification results', function() {
 					      var prop;

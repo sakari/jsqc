@@ -59,11 +59,16 @@
 		     property_wrapper, 
 		     function(e, gs) {
 			 if (e) {
-			     self._results = latest_failed_result;
+			     return qc.minimize(gs, property_wrapper, 
+						function(e, gs) {
+						    self._results = latest_failed_result;
+						    self._results.log(_.map(gs, function(v) { return v.show(); }));
+						    return on_complete();
+						});
 			 } else {
 			     self._results = latest_result;
+			     self._results.log(currentProperty.classify());
 			 }
-			 self._results.log(currentProperty.classify());
 			 currentProperty = null;
 			 return on_complete();
 		     });
