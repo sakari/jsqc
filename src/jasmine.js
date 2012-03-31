@@ -7,6 +7,7 @@
 	 this._description = description;
 	 this._property = property;
 	 this._generators = generators;
+	 this._generators.push(qc.gen.async);
      };
      Property.prototype.classify = function(tag) {
 	 if (tag === undefined)
@@ -31,9 +32,10 @@
 					 self._suite, 
 					 self._description);
 	     var spec_done;
+	     var async = test_data.pop();
 	     spec.qc ={
-		 waitsFor : function() {},
-		 event : function(fn) { fn(); }
+		 waitsFor : function(fn) { async.wait(fn); },
+		 event : function(fn) { async.callback(fn); }
 	     };
 
 	     spec.runs(function() { 

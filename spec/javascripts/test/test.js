@@ -24,20 +24,12 @@ describe('qc', function() {
 				       it('can be waited on until a given predicate holds', function() {
 					      var a = new qc.gen.async().value();
 					      var waits = 0;
+					      var holds;
 					      a.wait(function() {
-							 waits++;
-							 return waits >= 10;
+							 holds = waits++ >= 10;
+							 return holds;
 						     });
-					      expect(waits).toEqual(10);
-					  });
-				       it('wait is limited by a defalt wait try count of DEFAULT_WAIT', function() {
-					      var g = new qc.gen.async();
-					      var a = g.value();
-					      var tries = 0;
-					      expect(function() {
-							 a.wait(function() { tries++; return false; });
-						     }).toThrow();
-					      expect(tries).toEqual(g.DEFAULT_WAIT);
+					      expect(holds).toEqual(true);
 					  });
 				       it('triggers registered callbacks when waited on', function() {
 					      var a = new qc.gen.async().value();
@@ -192,6 +184,7 @@ describe('qc', function() {
 				       it('generates arrays of generated values', function() {
 					      var g = new (qc.gen.array(qc.gen.integer))();
 					      var non_empty = 0;
+					      var size = 1;
 					      _.times(100, function() {
 							  if (g.value().length > 0) {
 							      non_empty++;
@@ -200,7 +193,9 @@ describe('qc', function() {
 									       return _.isNumber(e);
 									   })).toEqual(true);
 							  }
-							  g = g.next();
+							  qc.resize(size + 1, function() {
+									g = g.next();
+								    });
 						      });
 					      expect(non_empty).toBeGreaterThan(0);
 					  });
@@ -377,7 +372,7 @@ describe('qc', function() {
 			  it('passes the latest exception when shrinking', function() {
 				 var exception;
 				 var tries = 0;
-				 qc.minimize([new qc.gen.integer()],
+				 qc.minimize([new qc.gen.integer({ value: 100})],
 					     function(cb, value) { cb(new Error(tries)); },
 					     doneFunc(function(e) {
 							  exception = e;

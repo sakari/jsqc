@@ -1,4 +1,4 @@
-describe('qc.jasmine', function() {
+describe('jasmine', function() {
 	     describe('property', function() {
 			  var _env, _ready, _suite;
 			  beforeEach(function() {
@@ -123,7 +123,7 @@ describe('qc.jasmine', function() {
 						  });
 			     	 when_suite_has_been_run(function(suite) {
 							     expect(suite.results().getItems()[0].getItems()[1].values)
-								 .toEqual(['10']);
+								 .toEqual(['10', '{"triggered":[]}']);
 							 });
 			     });
 
@@ -137,7 +137,7 @@ describe('qc.jasmine', function() {
 						  });
 			     	 when_suite_has_been_run(function(suite) {
 							     expect(suite.results().getItems()[0].getItems()[1].values)
-								 .toEqual([last_failing_value + '']);
+								 .toEqual([last_failing_value + '', '{"triggered":[]}']);
 							 });
 			     });
 
@@ -183,8 +183,24 @@ describe('qc.jasmine', function() {
 										       expect(tick).toBeTruthy();
 										   });
 						       });
+						    it('executes events in random order', function() {
+							   var orders = [];
+							   given_a_property('prop', function() {
+										var order = [];
+										this.qc.event(function() { order.push('a'); });
+										this.qc.event(function() { order.push('b'); });
+										this.qc.waitsFor(function() { return true; });
+										orders.push(order.join(', '));
+									    });
+							   when_suite_has_been_run(function() {
+										       expect(orders).toContain('a, b');
+										       expect(orders).toContain('b, a');
+										       expect(orders).toContain('a');
+										       expect(orders).toContain('b');
+										       expect(orders).toContain('');
+										   });
+						       });
 						});
-				       
 				   });
 
 			  describe('classify', function() {
