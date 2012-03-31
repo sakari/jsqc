@@ -223,6 +223,29 @@ describe('qc', function() {
 					       expect(_.all(values, function(v) { return _.isNumber(v); }));
 					   });
 			     });
+
+			  it('produces generators with increasing size ', function() {
+				 var values = [];
+				 function gen() {
+				     this.next = function() { return new gen(); };
+				     this.size = qc.size();
+				     this.value = function() { return this.size; };
+				     this.show = function() { return this.size; };
+				 }
+				 qc.generate(how_many, [gen], 
+					     function(cb, i) {
+						 values.push(i);
+						 cb();
+					     },
+					     doneFunc());
+				 afterDone(function() {
+					       var previous = values.shift();
+					       expect(_.map(values, function(v) { 
+								return v > previous;
+							    }))
+						   .not.toContain(false);
+					   });
+			     });
 			  it('stops short if callback is called with a value', function() {
 				 var tries = 0;
 				 var result;
