@@ -239,7 +239,6 @@ qc = (function() {
 				    return shrink_position < 0;
 				},
 				function(cb) {
-				    console.log('minimizing: ' + _.map(generators, function(g) { return g.show(); }).join(', '));
 				    return qc._minimize_at_position(shrink_position--, 
 								    generators, 
 								    predicate, 
@@ -259,7 +258,6 @@ qc = (function() {
 							       return done(e, generators);
 							   });
 				    }
-				    console.log(generators);
 				    return done(null, generators);
 				});
 		},
@@ -288,7 +286,6 @@ qc = (function() {
 				    qc.resize(size++, function() {
 						  generators = _.map(generators, function(g) { return g.next(); });
 					      });
-				    console.log('testing with: ' + _.map(generators, function(g) { return g.show(); }).join(', '));
 				    predicate.call(ctx, cb, _.map(generators, 
 								 function(g) { 
 								     return g.value(); 
