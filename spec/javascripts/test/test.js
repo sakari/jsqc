@@ -223,7 +223,6 @@ describe('qc', function() {
 					       expect(_.all(values, function(v) { return _.isNumber(v); }));
 					   });
 			     });
-
 			  it('stops short if callback is called with a value', function() {
 				 var tries = 0;
 				 var result;
@@ -445,11 +444,26 @@ describe('qc', function() {
 	     describe('resize', function() {
 			  it('sets the global size for the execution of the function', function() {
 				 var size;
-				 var set_size = 5;
+				 var original_size = qc.size();
+				 var set_size = original_size + 5;
 				 qc.resize(set_size, function() {
 						 size = qc.size();
 					     });
 				 expect(size).toEqual(set_size);
+				 expect(qc.size()).toEqual(original_size);
 			     });
+			  
+			  it('restores the original size even in case of exceptions', function() {
+				 var size;
+				 var original_size = qc.size();
+				 var set_size = original_size + 5;
+				 expect(function() { 
+					    qc.resize(set_size, function() {
+							  throw new Error('BOOM');
+						      });
+					}).toThrow();
+				 expect(qc.size()).toEqual(original_size);
+			     });
+
 		      });
 	 });
