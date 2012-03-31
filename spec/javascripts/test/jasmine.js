@@ -141,6 +141,16 @@ describe('qc.jasmine', function() {
 							 });
 			     });
 
+			  it('fails when there is an exception', function() {
+				 given_a_property('throw', function(i) {
+						      throw new Error('x');
+						  });
+				 when_suite_has_been_run(function(suite) {
+							     expect(suite.results().failedCount)
+								 .toEqual(1);
+							 });
+			     });
+
 			  describe('waiting for async events', function() {
 				       it('works with jasmine async tests', function() {
 					      var ticks = 0;
@@ -170,7 +180,7 @@ describe('qc.jasmine', function() {
 										this.expect(tick).toBeTruthy();
 									    });
 							   when_suite_has_been_run(function() {
-										expect(tick).toBeTruthy();
+										       expect(tick).toBeTruthy();
 										   });
 						       });
 						});

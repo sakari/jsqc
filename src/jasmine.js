@@ -31,6 +31,11 @@
 					 self._suite, 
 					 self._description);
 	     var spec_done;
+	     spec.qc ={
+		 waitsFor : function() {},
+		 event : function(fn) { fn(); }
+	     };
+
 	     spec.runs(function() { 
 			   try {
 			       self._property.apply(spec, test_data); 
