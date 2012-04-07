@@ -1,10 +1,5 @@
 # QuickCheck for javascript
 
-Framework for randomized test data generation for javascript in the footsteps of Claessen and Hughes with crappy [Jasmine](http://pivotal.github.com/jasmine) integration.
-
-For general introduction to QuickCheck a good starting point could be [wikipedia] (http://en.wikipedia.org/wiki/QuickCheck).
-
-
 ```javascript
    describe('arrays', function() {
         property('reverse of concatenation of arrays is equal to concatenation of reversed arrays',
@@ -17,6 +12,10 @@ For general introduction to QuickCheck a good starting point could be [wikipedia
 	});
 ```
 
+Framework for randomized test data generation for javascript in the footsteps of Claessen and Hughes with crappy [Jasmine](http://pivotal.github.com/jasmine) integration.
+
+For general introduction to QuickCheck a good starting point could be [wikipedia] (http://en.wikipedia.org/wiki/QuickCheck).
+
 ## Features
 
  * Genarates test data with increasing size
@@ -26,7 +25,7 @@ For general introduction to QuickCheck a good starting point could be [wikipedia
 
 ## Contributing
 
-Send a pull request. Please do not use camel case.
+Send a pull request. Please do not use camel case. You should be able to run the included jasmine testsuite with the help of the [jasmine gem](https://github.com/pivotal/jasmine-gem). The examples suite contains examples of failing cases otherwise everything should pass.
 
 ## License
 
