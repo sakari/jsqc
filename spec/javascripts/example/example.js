@@ -18,6 +18,26 @@ describe('example suite', function() {
 	     	      function(i) {
 	     		  expect(i).toBeLessThan(10);
 	     	      });
+	     
+ 	     property('qc finds an order of async events to trigger failure', 
+	     	      function() {
+	     		  var order = [];
+	     		  this.qc.event('first', function() { order.push('first'); });
+	     		  this.qc.event('second', function() { order.push('second'); });
+	     		  this.qc.event('third', function() { order.push('third'); });
+	     		  this.qc.waitsFor(function() { return order.length; });
+	     		  expect(order).not.toEqual(['third', 'first']);
+	     	      });
+
+	     property('qc finds the minimal set af async evens to trigger failure',
+		     function() {
+			 var order = [];
+			 this.qc.event('first', function() { order.push('first'); } );
+			 this.qc.event('second', function() { order.push('second'); } );
+			 this.qc.event('third', function() { order.push('third'); } );
+			 this.qc.waitsFor(function() { return order.length; });
+			 expect(order).not.toContain('third');
+		     });
 
 	     property('reverse of concatenation of arrays is equal to concatenation of reversed arrays', 
 	     	      qc.gen.array(qc.gen.integer), 

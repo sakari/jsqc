@@ -20,11 +20,12 @@ qc = (function() {
 						function execute(ix) {
 						    callback_selection_order.push(ix);
 						    callbacks[ix].already_triggered = true;
+						    console.log('async: ' + callbacks[ix].tag);
 						    callbacks[ix].cb();
 						}
 						function replay_when_shrinking() {
 						    var ix;
-						    while(required_callback_order) {
+						    while(required_callback_order.length) {
 							execute(required_callback_order.shift());
 						    }
 						    if (!predicate())
@@ -53,15 +54,18 @@ qc = (function() {
 						    return replay_when_shrinking();
 						return generate_new_execution_order();
 					    };
-					    this.callback = function(cb) {
-						callbacks[callback_index++] = { cb : cb };
+					    this.callback = function(tag, cb) {
+						if (!cb) cb = tag;
+						callbacks[callback_index++] = { cb : cb, tag : tag };
 					    };
 					})();
 			};
 			this.show = function() {
-			    return JSON.stringify({ callback_count : callbacks.length, 
-						    triggered : callback_selection_order,
-						    required_callback_order : required_callback_order
+			    return JSON.stringify({ 
+						      triggered : _.map(callback_selection_order, function(ix) {
+									   return "(" + ix + "): " + callbacks[ix].tag;
+									}),
+						      required_callback_order : required_callback_order
 						  });
 			};
 			this.shrink = function() {

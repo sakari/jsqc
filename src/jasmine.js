@@ -35,10 +35,11 @@
 					 self.suite, 
 					 self._description);
 	     var spec_done;
+	     var exception;
 	     var async = test_data.pop();
 	     spec.qc ={
 		 waitsFor : function(fn) { async.wait(fn); },
-		 event : function(fn) { async.callback(fn); }
+		 event : function(tag, fn) { async.callback(tag, fn); }
 	     };
 
 	     spec.runs(function() { 
@@ -47,7 +48,8 @@
 			       self._property.apply(spec, test_data); 
 			   } catch (x) {
 			       spec_done = true;
-			       throw x;
+			       if (!(x instanceof qc.Skip))
+				   throw x;
 			   }
 			   spec_done = true;
 		       });
@@ -71,6 +73,7 @@
 		     property_wrapper, 
 		     function(e, gs) {
 			 if (e) {
+			     console.log('minimizing', gs);
 			     return qc.minimize(gs, property_wrapper, 
 						function(e, gs) {
 						    self._results = latest_failed_result;
