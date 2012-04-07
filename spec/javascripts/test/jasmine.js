@@ -123,7 +123,7 @@ describe('jasmine', function() {
 						  });
 			     	 when_suite_has_been_run(function(suite) {
 							     expect(suite.results().getItems()[0].getItems()[1].values)
-								 .toEqual(['10', '{"triggered":[]}']);
+								 .toEqual(['Minimized failed input: ', ['10', '{"triggered":[]}']]);
 							 });
 			     });
 
@@ -137,7 +137,7 @@ describe('jasmine', function() {
 						  });
 			     	 when_suite_has_been_run(function(suite) {
 							     expect(suite.results().getItems()[0].getItems()[1].values)
-								 .toEqual([last_failing_value + '', '{"triggered":[]}']);
+								 .toEqual(['Minimized failed input: ', [last_failing_value + '', '{"triggered":[]}']]);
 							 });
 			     });
 

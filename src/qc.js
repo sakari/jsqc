@@ -129,7 +129,9 @@ qc = (function() {
 					  generate(this.size):
 					  _opts.value
 					);
-
+			    this.show = function() {
+				return JSON.stringify(_.map(value, function(i) { return i.show(); } ));
+			    };
 			    this.value = function() {
 				return _.map(value, function(i) {
 						 return i.value();

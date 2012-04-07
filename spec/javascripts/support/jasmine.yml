@@ -3,8 +3,9 @@ src_files:
 stylesheets:
 helpers:
 spec_files:
-  - **/*.js
+  - test/*.js
+  - example/*.js
 src_dir:
-spec_dir: spec/javascripts/test
+spec_dir: spec/javascripts
 
 

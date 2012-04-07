@@ -2,18 +2,21 @@
      var currentProperty;
 
      var Property = function(env, suite, description, generators, property) {
+	 jasmine.Spec.call(this, env, suite, description);
+
 	 this._env = env;
-	 this._suite = suite;
 	 this._description = description;
 	 this._property = property;
 	 this._generators = generators;
 	 this._generators.push(qc.gen.async);
+	 this._classifications = {};
      };
+     jasmine.util.inherit(Property, jasmine.Spec);
+
      Property.prototype.classify = function(tag) {
 	 if (tag === undefined)
 	     return this._classifications;
 
-	 this._classifications = this._classifications || {};
 	 if (!this._classifications[tag])
 	     this._classifications[tag] = 0;
 	 this._classifications[tag]++;
@@ -28,8 +31,8 @@
 	 var latest_result;
 
 	 function property_wrapper(cb, test_data) {
-	     var spec = new jasmine.Spec(self._env, 
-					 self._suite, 
+	     var spec = new jasmine.Spec(self._env,
+					 self.suite, 
 					 self._description);
 	     var spec_done;
 	     var async = test_data.pop();
@@ -40,6 +43,7 @@
 
 	     spec.runs(function() { 
 			   try {
+			       console.log('.');
 			       self._property.apply(spec, test_data); 
 			   } catch (x) {
 			       spec_done = true;
@@ -61,6 +65,7 @@
 	 }
 
 	 currentProperty = self;
+	 self._env.reporter.reportSpecStarting(self);
 	 qc.generate(100, 
 		     this._generators, 
 		     property_wrapper, 
@@ -69,14 +74,16 @@
 			     return qc.minimize(gs, property_wrapper, 
 						function(e, gs) {
 						    self._results = latest_failed_result;
-						    self._results.log(_.map(gs, function(v) { return v.show(); }));
+						    self._results.log(['Minimized failed input: ', 
+								       _.map(gs, function(v) { return v.show(); })]);
+						    self._env.reporter.reportSpecResults(self);
 						    return on_complete();
 						});
-			 } else {
-			     self._results = latest_result;
-			     self._results.log(currentProperty.classify());
-			 }
+			 } 
+			 self._results = latest_result;
+			 self._results.log(currentProperty.classify());
 			 currentProperty = null;
+			 self._env.reporter.reportSpecResults(self);
 			 return on_complete();
 		     });
      };
@@ -101,3 +108,7 @@
 	 return currentProperty.classify(tag);
      };
  })();
+
+var property = function() {
+    return jasmine.getEnv().property.apply(jasmine.getEnv(), arguments);
+}
