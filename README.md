@@ -1,13 +1,9 @@
 # QuickCheck for javascript
 
-Framework for randomized test data generation for javascript in the footsteps of Claessen and Hughes.
+Framework for randomized test data generation for javascript in the footsteps of Claessen and Hughes with crappy [Jasmine](http://pivotal.github.com/jasmine) integration.
 
 For general introduction to QuickCheck a good starting point could be [wikipedia] (http://en.wikipedia.org/wiki/QuickCheck).
 
- * Genarates test data with increasing size
- * Shrinking of failing inputs to smaller counterexamples
- * Randomized execution of asynchronous events with minimization for counterexample execution orders
- * Integration with [Jasmine framework](http://pivotal.github.com/jasmine) (output is crappy but it generally seems to work)
 
 ```javascript
    describe('arrays', function() {
@@ -20,6 +16,13 @@ For general introduction to QuickCheck a good starting point could be [wikipedia
             });
 	});
 ```
+
+## Features
+
+ * Genarates test data with increasing size
+ * Shrinking of failing inputs to smaller counterexamples
+ * Randomized execution of asynchronous events with minimization for counterexample execution orders
+ * Integration with [Jasmine framework](http://pivotal.github.com/jasmine) (output is crappy but it generally seems to work)
 
 ## Contributing
 
