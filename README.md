@@ -12,7 +12,7 @@
 	});
 ```
 
-Framework for randomized test data generation for javascript in the footsteps of Claessen and Hughes with crappy [Jasmine](http://pivotal.github.com/jasmine) integration.
+Framework for randomized test data generation for javascript in the footsteps of Claessen and Hughes with crappy [Jasmine](http://pivotal.github.com/jasmine) integration. See `spec/javascripts/example/example.js` for usage examples.
 
 For general introduction to QuickCheck a good starting point could be [wikipedia] (http://en.wikipedia.org/wiki/QuickCheck).
 
@@ -30,6 +30,6 @@ Send a pull request. Please do not use camel case. You should be able to run the
 ## License
 
 See COPYING.txt for original work. Also included is a copy of
-underscore.js which has its own license and generated stuff from
+underscore.js and async.js which have their own licenses and generated stuff from
 jasmine gem.
 
