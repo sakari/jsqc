@@ -2,6 +2,8 @@ src_files:
   - src/*.js
 stylesheets:
 helpers:
+  - lib/async/lib/async.js
+  - lib/underscore/underscore.js
 spec_files:
   - test/*.js
   - example/*.js

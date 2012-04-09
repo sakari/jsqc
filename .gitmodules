@@ -1,0 +1,6 @@
+[submodule "spec/javascipts/lib/async"]
+	path = spec/javascripts/lib/async
+	url = https://github.com/caolan/async.git
+[submodule "spec/javascipts/lib/underscore"]
+	path = spec/javascripts/lib/underscore
+	url = https://github.com/documentcloud/underscore.git

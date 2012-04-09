@@ -23,13 +23,19 @@ For general introduction to QuickCheck a good starting point could be [wikipedia
  * Randomized execution of asynchronous events with minimization for counterexample execution orders
  * Integration with [Jasmine framework](http://pivotal.github.com/jasmine) (output is crappy but it generally seems to work)
 
+## Dependencies
+
+ * [async.js](https://github.com/caolan/async)
+ * [underscore.js](https://github.com/documentcloud/underscore/)
+
+See `spec/javascripts/lib` for details.
+
 ## Contributing
 
 Send a pull request. Please do not use camel case. You should be able to run the included jasmine testsuite with the help of the [jasmine gem](https://github.com/pivotal/jasmine-gem). The examples suite contains examples of failing cases otherwise everything should pass.
 
 ## License
 
-See COPYING.txt for original work. Also included is a copy of
-underscore.js and async.js which have their own licenses and generated stuff from
-jasmine gem.
+Copyright Sakari Jokinen. This program is free software. You may do whatever you want to do with it. The software comes without any warranty, to the extent permitted by applicable law.
+
 

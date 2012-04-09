@@ -1,4 +1,0 @@
-This program is free software. You may do whatever you want to do with
-it. The software comes without any warranty, to the extent permitted
-by applicable law.
-
