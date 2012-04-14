@@ -1,5 +1,7 @@
 src_files:
-  - src/*.js
+  - src/qc.js
+  - src/jasmine.js
+  - src/qc.gen.interface.js
 stylesheets:
 helpers:
   - lib/async/lib/async.js

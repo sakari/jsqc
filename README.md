@@ -23,6 +23,12 @@ For general introduction to QuickCheck a good starting point could be [wikipedia
  * Randomized execution of asynchronous events with minimization for counterexample execution orders
  * Integration with [Jasmine framework](http://pivotal.github.com/jasmine) (output is crappy but it generally seems to work)
 
+## Test data generators
+
+The core of qc.js are the test data generators. The generators are responsible for producing the values passed to the property predicate.
+
+Test data generators passed to `property` must satisfy the interface defined in `src/qc.gen.interface.js` for everything to work. See `spec/javascripts/test.qc.gen.js` for examples on how to make sure of it. To produce test data with increasing size you can query the current test size with `qc.size()` and bake that into the test value.
+
 ## Dependencies
 
  * [async.js](https://github.com/caolan/async)
