@@ -65,8 +65,10 @@ qc.gen.interface =
 			     
 			     it('converges to []', function() {
 				    function converges(g) {
-					return _.all(g.shrink(),
-						     converges);
+					var shrunk = g.shrink();
+					return _.isArray(shrunk) &&
+					    _.all(shrunk,
+						  converges);
 				    }
 				    with_increasing_size(
 					function() {

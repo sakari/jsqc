@@ -1,5 +1,6 @@
 src_files:
   - src/qc.js
+  - src/qc.gen.*.js
   - src/jasmine.js
   - src/qc.gen.interface.js
 stylesheets:

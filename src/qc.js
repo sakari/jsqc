@@ -86,6 +86,9 @@ qc = (function() {
 					    });
 			return function oneof_inner() {
 			    var choice = new (qc.gen.choice(choises))();
+			    this.show = function() {
+				return choice.value().show();
+			    };
 			    this.value = function() {
 				return choice.value().value();
 			    };
@@ -109,10 +112,13 @@ qc = (function() {
 			    this.next = function() {
 				return new choice_inner();
 			    };
+			    this.show = function() {
+				return JSON.stringify(values[pick]);
+			    };
 			};
 		    },
 		    const : function(value, copy) {
-			return function() {
+			return function () {
 			    this.value = function() {
 				return (copy ? copy(value) : value);
 			    };
@@ -121,6 +127,9 @@ qc = (function() {
 			    };
 			    this.next = function() {
 				return this;
+			    };
+			    this.show = function() {
+				return JSON.stringify(value);
 			    };
 			};
 		    },
