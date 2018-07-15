@@ -12,7 +12,7 @@
 	});
 ```
 
-Framework for randomized test data generation for javascript in the footsteps of Claessen and Hughes with crappy [Jasmine](http://pivotal.github.com/jasmine) integration. See `spec/javascripts/example/example.js` for usage examples.
+Framework for randomized test data generation for javascript in the footsteps of Claessen and Hughes with crappy [Jasmine](https://jasmine.github.io/) integration. See `spec/javascripts/example/example.js` for usage examples.
 
 For general introduction to QuickCheck a good starting point could be [wikipedia] (http://en.wikipedia.org/wiki/QuickCheck).
 
@@ -21,7 +21,7 @@ For general introduction to QuickCheck a good starting point could be [wikipedia
  * Genarates test data with increasing size
  * Shrinking of failing inputs to smaller counterexamples
  * Randomized execution of asynchronous events with minimization for counterexample execution orders
- * Integration with [Jasmine framework](http://pivotal.github.com/jasmine) (output is crappy but it generally seems to work)
+ * Integration with [Jasmine framework](https://jasmine.github.io/) (output is crappy but it generally seems to work)
 
 ## Test data generators
 
@@ -38,7 +38,7 @@ See `spec/javascripts/lib` for details.
 
 ## Contributing
 
-Send a pull request. Please do not use camel case. You should be able to run the included jasmine testsuite with the help of the [jasmine gem](https://github.com/pivotal/jasmine-gem). The examples suite contains examples of failing cases otherwise everything should pass.
+Send a pull request. Please do not use camel case. You should be able to run the included jasmine testsuite with the help of the [jasmine gem](https://github.com/jasmine/jasmine-gem). The examples suite contains examples of failing cases otherwise everything should pass.
 
 ## License
 
